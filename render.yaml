@@ -1,0 +1,38 @@
+services:
+  # 1. Main Application (Node.js + React Frontend)
+  - type: web
+    name: smart-placement-api
+    env: node
+    plan: free
+    # Build Command: Install client deps, build client, install server deps
+    buildCommand: cd client && npm install && npm run build && cd ../server && npm install
+    # Start Command: Run the Express server
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: smart-placement-ml
+          property: url
+
+  # 2. ML Service (Python Flask)
+  - type: web
+    name: smart-placement-ml
+    env: python
+    plan: free
+    rootDirectory: ml-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: PORT
+        value: 10000

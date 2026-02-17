@@ -1,0 +1,11 @@
+node_modules
+/client/node_modules
+/server/node_modules
+/ml-service/venv
+/ml-service/__pycache__
+.env
+.DS_Store
+/client/build
+/server/uploads
+coverage
+*.log

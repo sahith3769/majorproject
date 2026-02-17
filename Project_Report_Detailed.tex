@@ -1,0 +1,349 @@
+\documentclass[12pt, a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Page Geometry
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+}
+
+% Code Listing Style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{
+    \textbf{SMART PLACEMENT PORTAL} \\
+    \large An Intelligent Recruitment Management System \\
+    \vspace{1cm}
+    \textbf{A PROJECT REPORT} \\
+    \vspace{0.5cm}
+    \large Submitted in partial fulfillment of the requirements for the degree of \\
+    \textbf{BACHELOR OF TECHNOLOGY} \\
+    \vspace{0.5cm}
+    \large IN \\
+    \textbf{COMPUTER SCIENCE AND ENGINEERING}
+}
+\author{\textbf{Submitted By:} \\ [Student Name] \\ [Roll Number]}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% -------------------------------------------------------------------
+% CERTIFICATE (Placeholder)
+\chapter*{Certificate}
+This is to certify that the project report entitled \textbf{``SMART PLACEMENT PORTAL''} submitted by \textbf{[Student Name]} in partial fulfillment of the requirements for the award of the degree of \textbf{Bachelor of Technology in Computer Science and Engineering} is a bonafide record of the work carried out under my supervision.
+
+\vspace{2cm}
+\noindent
+\textbf{Guide Name} \hfill \textbf{HOD Name} \\
+(Designation) \hfill (Dept. of CSE)
+
+% -------------------------------------------------------------------
+\chapter*{Acknowledgements}
+I would like to express my sincere gratitude to my project guide, \textbf{[Guide Name]}, for their invaluable guidance and support throughout the development of this project. I also thank the Department of Computer Science for providing the necessary infrastructure.
+
+\tableofcontents
+\listoffigures
+
+% -------------------------------------------------------------------
+\chapter{Introduction}
+
+\section{Overview}
+The \textbf{Smart Placement Portal} is a web-based application designed to streamline the campus recruitment process. It serves as a centralized platform connecting the three key stakeholders: \textbf{Students}, \textbf{Companies}, and \textbf{Administrators}. The system automates manual tasks such as resume collection, eligibility checking, and application tracking.
+
+\section{Problem Statement}
+In the traditional manual system:
+\begin{itemize}
+    \item Placement officers struggle to manage thousands of student records and resumes.
+    \item Students lack real-time visibility into job openings and their application status.
+    \item Companies find it difficult to filter relevant candidates from a large pool.
+    \item Data redundancy and communication gaps lead to missed opportunities.
+\end{itemize}
+
+\section{Objectives}
+The primary objectives of this project are:
+\begin{enumerate}
+    \item To digitize the entire placement workflow.
+    \item To provide a transparent and real-time application tracking system.
+    \item To implement an intelligent recommendation engine that matches students with suitable jobs.
+    \item To ensure data security using role-based access control (RBAC).
+\end{enumerate}
+
+\section{Scope}
+The project covers the complete lifecycle of campus placement, including student registration, resume uploading, job posting by companies, application submission, status updates (Accept/Reject), and final reporting.
+
+% -------------------------------------------------------------------
+\chapter{System Analysis}
+
+\section{Existing System}
+The existing system relies heavily on spreadsheets, emails, and notice boards.
+\begin{itemize}
+    \item \textbf{Disadvantages}: High manual effort, prone to errors, delayed information dissemination, difficulty in tracking historical data.
+\end{itemize}
+
+\section{Proposed System}
+The proposed Smart Placement Portal is a dynamic web application.
+\begin{itemize}
+    \item \textbf{Advantages}: Centralized database, instant notifications, automated eligibility filtering, secure and scalable architecture.
+\end{itemize}
+
+\section{Feasibility Study}
+\begin{itemize}
+    \item \textbf{Technical Feasibility}: Built using the MERN stack (MongoDB, Express, React, Node.js), which is open-source and widely supported.
+    \item \textbf{Operational Feasibility}: User-friendly interface (UI) ensures easy adoption by students and staff without extensive training.
+    \item \textbf{Economic Feasibility}: Low development and maintenance costs as it runs on standard web servers.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\chapter{System Requirements}
+
+\section{Hardware Requirements}
+\begin{itemize}
+    \item \textbf{Processor}: Intel Core i3 or higher.
+    \item \textbf{RAM}: 4 GB minimum (8 GB recommended).
+    \item \textbf{Storage}: 128 GB SSD/HDD.
+    \item \textbf{Internet Connection}: Broadband for API access.
+\end{itemize}
+
+\section{Software Requirements}
+\begin{itemize}
+    \item \textbf{Operating System}: Windows 10/11, Linux, or macOS.
+    \item \textbf{Frontend}: React.js, HTML5, CSS3 (Custom Light Theme).
+    \item \textbf{Backend}: Node.js, Express.js.
+    \item \textbf{Database}: MongoDB (NoSQL).
+    \item \textbf{Tools}: VS Code (Editor), Postman (API Testing), Git (Version Control).
+\end{itemize}
+
+\section{Functional Requirements}
+\begin{itemize}
+    \item \textbf{Student}: Register, Login, Upload Resume, View Jobs, Apply, Check Status.
+    \item \textbf{Company}: Register, Post Jobs (with mandatory deadline), View Applicants, Download Resumes, Update Status (Accept/Reject).
+    \item \textbf{Admin}: Manage Users, Oversee System Health.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\chapter{System Design}
+
+\section{System Architecture}
+The project follows the \textbf{MVC (Model-View-Controller)} pattern on the backend and a \textbf{Component-Based Architecture} on the frontend.
+\begin{itemize}
+\item \textbf{Client Side}: React.js handles the presentation layer. It communicates with the server via REST APIs.
+    \item \textbf{Server Side}: Node.js/Express.js processes requests, executes business logic, and interacts with the database.
+    \item \textbf{Database}: MongoDB stores data in JSON-like documents.
+\end{itemize}
+
+% -------------------------------------------------------------
+\section{Stack Workflow and Diagrams}
+This section illustrates the data flow and component interaction within the MERN stack.
+
+\subsection{Data Flow Diagram}
+The following diagram represents the high-level data flow from the User Interface to the Database.
+
+\begin{figure}[h]
+    \centering
+    % Placeholder for a clear mental model diagram
+    \begin{verbatim}
+    [Frontend (React)]  <--->  [REST API (Express/Node)]  <--->  [Database (MongoDB)]
+            |                           |
+        User Action                Authentication
+                                   & Logic
+    \end{verbatim}
+    \caption{High-Level MERN Stack Data Flow}
+\end{figure}
+
+\subsection{Authentication Workflow}
+The authentication process uses JWT for secure, stateless sessions.
+\begin{enumerate}
+    \item User submits credentials (Email/Password).
+    \item Server verifies:
+    \begin{itemize}
+        \item User exists in MongoDB.
+        \item Password hash matches (using \texttt{bcryptjs}).
+        \item User is verified (OTP checked).
+    \end{itemize}
+    \item Server generates a \textbf{JWT Token} and sends it to the client.
+    \item Client stores the token in \texttt{localStorage}.
+    \item For protected routes, Client sends the token in the \texttt{Authorization} header.
+\end{enumerate}
+
+\section{Implementation Methodology}
+The project was developed using the \textbf{Agile Methodology}, specifically following an iterative incremental approach.
+
+\subsection{Phase 1: Requirement Analysis}
+Identified the core needs: Applicant tracking, Role-based Dashboards, and Deadline Enforcement.
+
+\subsection{Phase 2: Database Design}
+Designed Mongoose schemas for Users and Jobs to ensure data consistency and relationships.
+
+\subsection{Phase 3: Backend Development}
+Built RESTful APIs using Node.js and Express. Implemented Middleware for:
+\begin{itemize}
+    \item \textbf{Authentication}: \texttt{protect()} middleware.
+    \item \textbf{Authorization}: \texttt{roleCheck(['company'])} middleware.
+    \item \texttt{Error Handling}: Centralized error handler.
+\end{itemize}
+
+\subsection{Phase 4: Frontend Development}
+Developed the UI using React.js. Created reusable components (Cards, Navbar, Loader) and implemented the premium "Light Theme" design system.
+
+\subsection{Phase 5: Integration \& Testing}
+Connected Frontend to Backend using Axios. Performed rigorous testing of critical flows like Job Application and Status Updates.
+
+\section{Algorithms Used}
+
+\subsection{1. Skill Matching Algorithm (Recommendation Engine)}
+This algorithm ranks jobs based on how well they match a student's profile.
+\begin{enumerate}
+    \item \textbf{Input}: Student's Skill Set ($S$), Job's Required Skills ($J$).
+    \item \textbf{Process}:
+    \begin{itemize}
+        \item Filter active jobs (Deadline not passed).
+        \item For each job, calculate intersection $M = S \cap J$.
+        \item Score = Size of $M$ (Number of matching skills).
+    \end{itemize}
+    \item \textbf{Output}: List of jobs sorted by Score in descending order.
+\end{enumerate}
+
+\subsection{2. Password Hashing (Bcrypt)}
+To ensure security, passwords are never stored in plain text.
+\begin{itemize}
+    \item \textbf{Hashing}: $Hash = Bcrypt(Password, SaltRounds=10)$.
+    \item \textbf{Verification}: $Result = Compare(InputPassword, StoredHash)$.
+    \item This algorithm is computationally expensive to resist brute-force attacks.
+\end{itemize}
+
+\section{Database Design (Schema)}
+\subsection{User Schema}
+Stores details of Students, Companies, and Admins.
+\begin{lstlisting}[language=JavaScript]
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String,
+  role: { type: String, enum: ["student", "company", "admin"] },
+  skills: [String],
+  resume: String, // Path to uploaded file
+  isVerified: Boolean
+});
+\end{lstlisting}
+
+\subsection{Job Schema}
+Stores job postings and applications.
+\begin{lstlisting}[language=JavaScript]
+const jobSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  company: { type: ObjectId, ref: "User" },
+  deadline: { type: Date, required: true }, // IMPORTANT
+  applicants: [{
+      student: { type: ObjectId, ref: "User" },
+      status: { type: String, enum: ["pending", "accepted", "rejected"] },
+      appliedAt: Date
+  }]
+});
+\end{lstlisting}
+
+% -------------------------------------------------------------------
+\chapter{Implementation Details}
+
+\section{Module Description}
+
+\subsection{1. Authentication Module}
+\begin{itemize}
+    \item Uses \textbf{JWT (JSON Web Tokens)} for secure, stateless authentication.
+    \item Passwords are hashed using \textbf{bcryptjs} before storage.
+    \item Includes OTP-based email verification.
+\end{itemize}
+
+\subsection{2. Student Dashboard}
+\begin{itemize}
+    \item \textbf{Resume Upload}: Students can upload their CV (PDF format). The system allows previewing and updating the file.
+    \item \textbf{Job Recommendations}: An algorithm matches student skills with job requirements to suggest relevant openings.
+    \item \textbf{Status Tracking}: A dedicated "My Applications" section shows the status of each application with color-coded badges (Yellow: Pending, Green: Accepted, Red: Rejected).
+\end{itemize}
+
+\subsection{3. Company Dashboard}
+\begin{itemize}
+    \item \textbf{Post Job}: Companies can create job listings. The system enforces a \textbf{deadline check} to prevent invalid posts.
+    \item \textbf{Manage Applicants}: Recruiters can view a list of applicants for each job, download their resumes, and change their status.
+\end{itemize}
+
+\section{Key Features Implemented}
+\begin{enumerate}
+    \item \textbf{Deadline Enforcement}: The backend strictly validates that a deadline is provided. Jobs automatically expire or are filtered out after the deadline.
+    \item \textbf{Prevent Duplicate Applications}: Once a student applies for a job, it is removed from the "Available Jobs" list and moved to "My Applications".
+    \item \textbf{Resume Preview}: Direct link to view the uploaded resume in the browser before downloading.
+    \item \textbf{Light Theme UI}: A modern, professional interface using a Royal Blue and Slate White color palette with glassmorphism effects.
+\end{enumerate}
+
+% -------------------------------------------------------------------
+\chapter{Testing}
+
+\section{Unit Testing}
+Each API endpoint (Login, Register, Create Job, Apply) was tested individually using Postman.
+\begin{itemize}
+    \item \textbf{Test Case 1}: Login with invalid credentials $\rightarrow$ Result: Access Denied (Passed).
+    \item \textbf{Test Case 2}: Create Job without deadline $\rightarrow$ Result: 400 Bad Request (Passed).
+\end{itemize}
+
+\section{Integration Testing}
+Tested the flow between Frontend and Backend.
+\begin{itemize}
+    \item \textbf{Scenario}: Student applies for a job.
+    \item \textbf{Verification}: The job count in Company Dashboard increments. The student sees the job in "My Applications". The "Apply" button becomes disabled/hidden for that job.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\chapter{Conclusion and Future Scope}
+
+\section{Conclusion}
+The Smart Placement Portal has been successfully developed and tested. It meets all the initial requirements of automating the placement process. The system provides a seamless experience for students to find jobs and for companies to hire talent, reducing manual workload and improved transparency.
+
+\section{Future Scope}
+\begin{itemize}
+    \item \textbf{Mobile App}: Developing a React Native mobile application for easier access.
+    \item \textbf{AI Chatbot}: Integrating a chatbot to answer student queries instantly.
+    \item \textbf{Interview Scheduling}: Automated calendar invites for shortlisted candidates.
+\end{itemize}
+
+% -------------------------------------------------------------------
+\begin{thebibliography}{9}
+\bibitem{react} React Documentation. \textit{https://reactjs.org}
+\bibitem{node} Node.js Documentation. \textit{https://nodejs.org}
+\bibitem{algo} Introduction to Algorithms, Cormen et al.
+\bibitem{se} Pressman, R. S. (2010). \textit{Software Engineering: A Practitioner's Approach}. McGraw-Hill Education.
+\end{thebibliography}
+
+\end{document}
