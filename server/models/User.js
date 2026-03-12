@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   name: String,
+  username: { type: String, unique: true, sparse: true },
   email: { type: String, unique: true },
   password: String,
   role: {
@@ -21,6 +22,7 @@ const userSchema = new mongoose.Schema({
   otpExpiry: Date,
   resume: String,
   mobile: String,
+  experience: { type: Number, default: 0 },
   approved: { type: Boolean, default: false }, // for company
 });
 

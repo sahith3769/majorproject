@@ -7,15 +7,18 @@ const logger = require("../config/logger");
 /* ================= REGISTER ================= */
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, skills = [] } = req.body;
+    const { name, username, email, password, role, skills = [] } = req.body;
 
     if (!password || password.length < 6) {
       return res.status(400).json({ msg: "Password must be at least 6 characters long" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const lowerEmail = email.toLowerCase();
+    const lowerUsername = username.toLowerCase();
+
+    const existingUser = await User.findOne({ $or: [{ email: lowerEmail }, { username: lowerUsername }] });
     if (existingUser)
-      return res.status(400).json({ msg: "User already exists" });
+      return res.status(400).json({ msg: "User or Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -23,7 +26,8 @@ exports.register = async (req, res) => {
 
     const user = await User.create({
       name,
-      email,
+      username: lowerUsername,
+      email: lowerEmail,
       password: hashedPassword,
       role,
       skills: Array.isArray(skills) ? skills : [],
@@ -75,9 +79,15 @@ exports.verifyOtp = async (req, res) => {
 /* ================= LOGIN ================= */
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [
+        { email: { $regex: `^${identifier}$`, $options: 'i' } },
+        { username: { $regex: `^${identifier}$`, $options: 'i' } }
+      ]
+    });
+
     if (!user)
       return res.status(400).json({ msg: "Invalid credentials" });
 

@@ -13,6 +13,10 @@ const jobSchema = new mongoose.Schema({
     type: String,
     required: false, //  Optional to support backward compatibility
   },
+  experience: {
+    type: String,
+    required: false, // Optional
+  },
   /* Indexes for Performance Optimization */
   company: {
     type: mongoose.Schema.Types.ObjectId,

@@ -7,9 +7,10 @@ const {
   applyJob,
   getCompanyJobs,
   updateApplicationStatus,
-  getMyApplications,  
+  getMyApplications,
   getRecommendedJobs,
-  deleteJob
+  deleteJob,
+  deleteApplicationStudent
 
 } = require("../controllers/jobController");
 
@@ -54,7 +55,11 @@ router.delete(
   roleCheck(["company"]),
   deleteJob
 );
-
-
+router.delete(
+  "/application/:jobId",
+  protect,
+  roleCheck(["student"]),
+  deleteApplicationStudent
+);
 
 module.exports = router;

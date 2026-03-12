@@ -8,7 +8,7 @@ const { sendStatusEmail } = require("../utils/sendEmail");
 /* ================= CREATE JOB ================= */
 exports.createJob = async (req, res) => {
   try {
-    const { title, description, skillsRequired, deadline, salary } = req.body;
+    const { title, description, skillsRequired, deadline, salary, experience } = req.body;
 
     if (!deadline) {
       return res.status(400).json({ msg: "Deadline is required" });
@@ -24,6 +24,7 @@ exports.createJob = async (req, res) => {
       skillsRequired,
       deadline,
       salary,
+      experience,
       company: req.user.id,
     });
 
@@ -92,7 +93,7 @@ exports.getCompanyJobs = async (req, res) => {
     const jobs = await Job.find({ company: req.user.id })
       .populate({
         path: "applicants.student",
-        select: "name email skills resume",
+        select: "name email skills resume experience",
       });
 
     res.json(jobs);
@@ -200,7 +201,7 @@ exports.getRecommendedJobs = async (req, res) => {
       return res.status(404).json({ msg: "Student profile not found" });
     }
 
-    if (!student.skills || student.skills.length === 0) {
+    if (!student.skills || student.skills.length === 0 || !student.resume) {
       return res.json([]);
     }
 
@@ -210,7 +211,7 @@ exports.getRecommendedJobs = async (req, res) => {
     const jobs = await Job.find({
       $or: [
         { deadline: null },
-        { deadline: { $gte: today } }
+        { deadline: { $gt: today } }
       ]
     }).populate("company", "name email").lean(); // Populate company!
 
@@ -226,7 +227,11 @@ exports.getRecommendedJobs = async (req, res) => {
       // Restore populated company data if lost from ML service
       const recommendedJobs = response.data.map(recJob => {
         const originalJob = jobs.find(j => j._id.toString() === recJob._id.toString());
-        return { ...recJob, company: originalJob ? originalJob.company : recJob.company };
+        return {
+          ...originalJob,
+          ...recJob,
+          company: originalJob ? originalJob.company : recJob.company
+        };
       });
 
       return res.json(recommendedJobs);
@@ -240,14 +245,20 @@ exports.getRecommendedJobs = async (req, res) => {
           const matchedSkills = job.skillsRequired ? job.skillsRequired.filter((skill) =>
             student.skills.some(s => s.toLowerCase() === skill.toLowerCase())
           ) : [];
+          
+          const missingSkills = job.skillsRequired ? job.skillsRequired.filter((skill) =>
+            !student.skills.some(s => s.toLowerCase() === skill.toLowerCase())
+          ) : [];
 
           return {
             _id: job._id,
             title: job.title,
             description: job.description,
             salary: job.salary,
+            experience: job.experience,
             company: job.company, // Include company object
             matchedSkills,
+            missingSkills,
             matchCount: matchedSkills.length,
           };
         })
@@ -276,6 +287,40 @@ exports.deleteJob = async (req, res) => {
     res.json({ msg: "Job deleted successfully" });
   } catch (error) {
     logger.error(`Delete Job Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= STUDENT DELETE APPLICATION ================= */
+exports.deleteApplicationStudent = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ msg: "Job not found" });
+
+    const applicationIndex = job.applicants.findIndex(
+      (a) => a.student.toString() === req.user.id
+    );
+
+    if (applicationIndex === -1) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+
+    const application = job.applicants[applicationIndex];
+
+    // Safety check: Don't allow deleting pending applications easily
+    if (application.status === "pending") {
+      return res.status(400).json({ msg: "You cannot delete a pending application. Please wait for company status." });
+    }
+
+    // Remove the application
+    job.applicants.splice(applicationIndex, 1);
+    await job.save();
+
+    logger.info(`Application for job ${req.params.jobId} deleted by student ${req.user.id}`);
+    res.json({ msg: "Application removed from your history" });
+
+  } catch (error) {
+    logger.error(`Delete Application Student Error: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 };

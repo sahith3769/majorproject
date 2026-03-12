@@ -40,3 +40,25 @@ exports.getAllApplications = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/* ================= GET ALL COMPANIES ================= */
+exports.getAllCompanies = async (req, res) => {
+  try {
+    const companies = await User.find({ role: "company" }).select("-password");
+    res.json(companies);
+  } catch (error) {
+    logger.error(`Get All Companies Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= GET ALL STUDENTS ================= */
+exports.getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" }).select("-password");
+    res.json(students);
+  } catch (error) {
+    logger.error(`Get All Students Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};

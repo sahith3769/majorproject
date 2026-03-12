@@ -1,7 +1,9 @@
 import os
 import logging
+import re
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+from pdfminer.high_level import extract_text
 
 # Load environment variables
 load_dotenv()
@@ -49,7 +51,7 @@ def recommend():
             
             # Textual representation of the job for the ML model
             # giving more weight to skills by repeating them? No, standard TF-IDF is fine.
-            job_text = " ".join(job_skills_list) + " " + job.get("title", "").lower() + " " + job.get("description", "").lower()
+            job_text = " ".join(job_skills_list) + " " + job.get("title", "").lower() + " " + job.get("description", "").lower() + " " + job.get("experience", "").lower()
             
             job_feature_texts.append(job_text)
             valid_jobs.append({
@@ -95,12 +97,18 @@ def recommend():
                 
                 # We still calculate exact keyword matches for the UI to display "Matched: Python, React"
                 exact_matches = student_skills_set.intersection(job_skills_set)
+                
+                # Calculate missing skills
+                missing_skills = [s for s in job_skills_list if s not in student_skills_set]
 
                 matched_jobs.append({
                     "_id": original_job.get("_id"),
                     "title": original_job.get("title", "Unknown Title"),
                     "description": original_job.get("description", ""),
+                    "salary": original_job.get("salary", "N/A"),
+                    "experience": original_job.get("experience", ""),
                     "matchedSkills": list(exact_matches),
+                    "missingSkills": missing_skills,
                     "matchScore": float(score), # ML confidence score
                     "matchCount": len(exact_matches) # Legacy support
                 })
@@ -124,6 +132,61 @@ def recommend():
 @app.route("/", methods=["GET"])
 def home():
     return "ML Skill Matching Server Running"
+
+
+@app.route("/analyze-resume", methods=["POST"])
+def analyze_resume():
+    try:
+        if 'resume' not in request.files:
+            return jsonify({"error": "No resume file provided"}), 400
+        
+        file = request.files['resume']
+        if file.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        # Save temporarily
+        temp_path = os.path.join("uploads", file.filename)
+        os.makedirs("uploads", exist_ok=True)
+        file.save(temp_path)
+
+        # 1. Extract Text from PDF
+        text = extract_text(temp_path)
+        
+        # Cleanup temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+        if not text:
+            return jsonify({"error": "Could not extract text from resume"}), 400
+
+        # 2. Basic Skill Extraction
+        # We'll use a predefined list of skills to match against the text
+        SKILLS_DB = [
+            "python", "javascript", "java", "react", "node.js", "node", "express", "mongodb",
+            "sql", "mysql", "postgresql", "html", "css", "git", "docker", "aws", "azure",
+            "machine learning", "deep learning", "data science", "nlp", "flask", "django",
+            "c++", "c#", "php", "typescript", "angular", "vue", "tailwind", "bootstap",
+            "redux", "rest api", "graphql", "kubernetes", "jenkins", "terraform"
+        ]
+        
+        text_lower = text.lower()
+        extracted_skills = []
+        
+        for skill in SKILLS_DB:
+            # Simple word boundary check to avoid partial matches (e.g., "git" in "digital")
+            pattern = r'\b' + re.escape(skill) + r'\b'
+            if re.search(pattern, text_lower):
+                extracted_skills.append(skill)
+
+        # Dedup and capitalize node.js correctly
+        extracted_skills = list(set(extracted_skills))
+        
+        logger.info(f"Resume analysis successful: {len(extracted_skills)} skills found.")
+        return jsonify({"skills": extracted_skills})
+
+    except Exception as e:
+        logger.error(f"Error analyzing resume: {str(e)}")
+        return jsonify({"error": "Internal Server Error during analysis"}), 500
 
 
 if __name__ == "__main__":
