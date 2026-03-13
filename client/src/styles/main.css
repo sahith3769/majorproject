@@ -1,0 +1,172 @@
+/* Google Font */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #f4f6f9;
+  color: #333;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+  background: linear-gradient(90deg, #1e3c72, #2a5298);
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.navbar h3 {
+  font-weight: 500;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin-right: 20px;
+  font-weight: 400;
+  transition: 0.3s;
+}
+
+.nav-links a:hover {
+  opacity: 0.7;
+}
+
+.logout-btn {
+  background: #ff4d4d;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+/* ================= FORM ================= */
+
+.form-container {
+  width: 400px;
+  margin: 80px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.form-container button {
+  width: 100%;
+  padding: 10px;
+  background: #2a5298;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.form-container button:hover {
+  background: #1e3c72;
+}
+
+/* ================= DASHBOARD ================= */
+
+.dashboard {
+  padding: 40px;
+}
+
+.dashboard h2 {
+  margin-bottom: 30px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card h4 {
+  margin-bottom: 10px;
+}
+
+.card button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  background: #2a5298;
+  color: white;
+  cursor: pointer;
+}
+
+.card button:hover {
+  background: #1e3c72;
+}.status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.pending {
+  background: orange;
+}
+
+.accepted {
+  background: green;
+}
+
+.rejected {
+  background: red;
+}
+
+.job-form {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 500px;
+  margin-bottom: 30px;
+  box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+}
+.cv-link {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 6px 12px;
+  background: #2a5298;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.cv-link:hover {
+  background: #1e3c72;
+}
+
+.dashboard h3 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: #2a5298;
+}
