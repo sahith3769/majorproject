@@ -36,7 +36,7 @@ function Register() {
       navigate("/verify-otp", { state: { email: form.email } });
 
     } catch (error) {
-      toast.error(error.response?.data?.msg || "Registration Failed");
+      toast.error(error.response?.data?.msg || error.response?.data?.error || "Registration Failed");
     } finally {
       setLoading(false);
     }
