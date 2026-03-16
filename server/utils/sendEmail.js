@@ -1,40 +1,52 @@
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
+
 const sendEmail = async (email, otp) => {
-  const payload = {
-    from: {
-      email: process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com",
-      name: "Smart Placement Portal"
-    },
-    to: [
-      {
-        email: email
-      }
-    ],
-    subject: "Smart Placement Portal OTP Verification",
-    html: `
+  const mailerSend = new MailerSend({
+    apiKey: process.env.MAILERSEND_API_KEY,
+  });
+
+  const sentFrom = new Sender(
+    process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com", 
+    "Smart Placement Portal"
+  );
+  
+  const recipients = [
+    new Recipient(email, "Student")
+  ];
+
+  const emailParams = new EmailParams()
+    .setFrom(sentFrom)
+    .setTo(recipients)
+    .setSubject("Smart Placement Portal OTP Verification")
+    .setHtml(`
       <h3>Your OTP is:</h3>
       <h2>${otp}</h2>
       <p>This OTP is valid for 5 minutes.</p>
-    `,
-  };
+    `);
 
-  const response = await fetch("https://api.mailersend.com/v1/email", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.MAILERSEND_API_KEY}`,
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest"
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("MailerSend Error:", errorText);
-    throw new Error("Failed to send email via MailerSend");
+  try {
+    const response = await mailerSend.email.send(emailParams);
+    console.log("MailerSend OTP sent successfully", response.statusCode);
+  } catch (error) {
+    console.error("MailerSend Error:", error?.body ? error.body : error);
+    throw new Error("Failed to send email via MailerSend SDK");
   }
 };
 
 const sendStatusEmail = async (email, jobTitle, status, studentName) => {
+  const mailerSend = new MailerSend({
+    apiKey: process.env.MAILERSEND_API_KEY,
+  });
+
+  const sentFrom = new Sender(
+    process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com", 
+    "Smart Placement Portal"
+  );
+
+  const recipients = [
+    new Recipient(email, studentName)
+  ];
+
   const subject = `Application Status Update: ${jobTitle}`;
   let message = "";
 
@@ -59,34 +71,18 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     `;
   }
 
-  const payload = {
-    from: {
-      email: process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com",
-      name: "Smart Placement Portal"
-    },
-    to: [
-      {
-        email: email
-      }
-    ],
-    subject: subject,
-    html: message,
-  };
+  const emailParams = new EmailParams()
+    .setFrom(sentFrom)
+    .setTo(recipients)
+    .setSubject(subject)
+    .setHtml(message);
 
-  const response = await fetch("https://api.mailersend.com/v1/email", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.MAILERSEND_API_KEY}`,
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest"
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("MailerSend Error:", errorText);
-    throw new Error("Failed to send email via MailerSend");
+  try {
+    const response = await mailerSend.email.send(emailParams);
+    console.log("MailerSend Status email sent successfully", response.statusCode);
+  } catch (error) {
+    console.error("MailerSend Error:", error?.body ? error.body : error);
+    throw new Error("Failed to send email via MailerSend SDK");
   }
 };
 
