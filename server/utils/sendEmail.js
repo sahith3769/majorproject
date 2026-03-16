@@ -1,7 +1,14 @@
 const sendEmail = async (email, otp) => {
   const payload = {
-    from: "Smart Placement Portal <onboarding@resend.dev>",
-    to: [email],
+    from: {
+      email: process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com",
+      name: "Smart Placement Portal"
+    },
+    to: [
+      {
+        email: email
+      }
+    ],
     subject: "Smart Placement Portal OTP Verification",
     html: `
       <h3>Your OTP is:</h3>
@@ -10,18 +17,20 @@ const sendEmail = async (email, otp) => {
     `,
   };
 
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetch("https://api.mailersend.com/v1/email", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Authorization": `Bearer ${process.env.MAILERSEND_API_KEY}`,
       "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest"
     },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to send email via Resend");
+    const errorText = await response.text();
+    console.error("MailerSend Error:", errorText);
+    throw new Error("Failed to send email via MailerSend");
   }
 };
 
@@ -51,24 +60,33 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
   }
 
   const payload = {
-    from: "Smart Placement Portal <onboarding@resend.dev>",
-    to: [email],
+    from: {
+      email: process.env.MAILERSEND_FROM_EMAIL || "info@smartplacement.com",
+      name: "Smart Placement Portal"
+    },
+    to: [
+      {
+        email: email
+      }
+    ],
     subject: subject,
     html: message,
   };
 
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetch("https://api.mailersend.com/v1/email", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Authorization": `Bearer ${process.env.MAILERSEND_API_KEY}`,
       "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest"
     },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to send email via Resend");
+    const errorText = await response.text();
+    console.error("MailerSend Error:", errorText);
+    throw new Error("Failed to send email via MailerSend");
   }
 };
 
