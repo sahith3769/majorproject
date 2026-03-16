@@ -31,12 +31,14 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       role,
       skills: Array.isArray(skills) ? skills : [],
-      otp: null,
-      otpExpiry: null,
-      isVerified: true, // ✅ Bypassing OTP: Auto-verify user!
+      otp,
+      otpExpiry: Date.now() + 5 * 60 * 1000,
+      isVerified: false,
     });
 
-    res.json({ msg: "Registration successful! You can now login." });
+    await sendEmail(email, otp);
+
+    res.json({ msg: "OTP sent to email" });
 
   } catch (error) {
     logger.error(`Registration Error: ${error.message}`);

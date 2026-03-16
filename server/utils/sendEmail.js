@@ -1,41 +1,31 @@
-const nodemailer = require("nodemailer");
-
 const sendEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
+  const payload = {
+    from: "Smart Placement Portal <onboarding@resend.dev>",
+    to: [email],
     subject: "Smart Placement Portal OTP Verification",
     html: `
       <h3>Your OTP is:</h3>
       <h2>${otp}</h2>
       <p>This OTP is valid for 5 minutes.</p>
     `,
+  };
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to send email via Resend");
+  }
 };
 
 const sendStatusEmail = async (email, jobTitle, status, studentName) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-
   const subject = `Application Status Update: ${jobTitle}`;
   let message = "";
 
@@ -60,12 +50,26 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     `;
   }
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
+  const payload = {
+    from: "Smart Placement Portal <onboarding@resend.dev>",
+    to: [email],
     subject: subject,
     html: message,
+  };
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to send email via Resend");
+  }
 };
 
 module.exports = { sendEmail, sendStatusEmail };
