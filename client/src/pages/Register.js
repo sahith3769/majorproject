@@ -47,7 +47,7 @@ function Register() {
       <div className="auth-card">
         <h2>Create Account</h2>
         <p className="auth-subtitle">
-          Register to Smart Placement Portal
+          Register to MRU CSE Placement Portal
         </p>
 
         <form onSubmit={handleSubmit}>

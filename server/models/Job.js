@@ -51,6 +51,11 @@ const jobSchema = new mongoose.Schema({
       }
     },
   ],
+  approved: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
 });
 
 // Compound index for finding if a user has already applied

@@ -84,9 +84,15 @@ function StudentDashboard() {
 
   /* ================= UPLOAD RESUME ================= */
   const uploadResume = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      toast.info("No file selected");
+      return;
+    }
+
     try {
       const formData = new FormData();
-      formData.append("resume", e.target.files[0]);
+      formData.append("resume", file);
 
       const loadId = toast.loading("Uploading Resume...");
 
@@ -94,16 +100,37 @@ function StudentDashboard() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.update(loadId, { render: res.data.msg || "Resume Uploaded!", type: "success", isLoading: false, autoClose: 3000 });
-
-      if (res.data.skills && res.data.skills.length > 0) {
-        toast.info(`Found ${res.data.skills.length} skills in your resume!`, { delay: 3500 });
-        fetchData(); // Refresh to show new recommendations
+      // Show success message based on backend analysis status
+      if (res.data.analysisStatus === "success") {
+        toast.update(loadId, { 
+          render: "Resume Uploaded & Analyzed!", 
+          type: "success", 
+          isLoading: false, 
+          autoClose: 3000 
+        });
+        
+        if (res.data.skills && res.data.skills.length > 0) {
+          toast.info(`Found ${res.data.skills.length} skills in your resume!`, { delay: 1000 });
+        }
+      } else {
+        toast.update(loadId, { 
+          render: "Resume Uploaded! (AI Analysis skipped)", 
+          type: "success", 
+          isLoading: false, 
+          autoClose: 3000 
+        });
+        if (res.data.analysisError) {
+          console.warn("Analysis Error:", res.data.analysisError);
+        }
       }
+
+      fetchData(); // Refresh to show new state (resume filename, skills, recommendations)
     } catch (error) {
-      toast.error("Resume Upload Failed");
+      const errorMsg = error.response?.data?.error || "Resume Upload Failed";
+      toast.error(errorMsg);
     }
   };
+
 
   /* ================= ANALYZE RESUME ================= */
   const analyzeResume = async () => {
@@ -148,11 +175,20 @@ function StudentDashboard() {
     return { hasMatch, missingSkills, matchedSkills, matchCount };
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
+
   if (loading) return <div className="dashboard"><Loader /></div>;
 
   return (
     <div className="dashboard">
       <div className="fade-in">
+        <button className="nav-back-btn" onClick={handleLogout} style={{ marginBottom: '1rem' }}>
+          &larr; Back
+        </button>
         <h2 className="section-title" style={{ borderBottom: 'none', marginBottom: '10px' }}>
           Welcome, {user?.name || "Student"}!
         </h2>

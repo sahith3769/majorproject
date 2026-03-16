@@ -1,19 +1,10 @@
-import { Navigate } from "react-router-dom";
-
+// ⚠️ AUTH TEMPORARILY DISABLED FOR LOCAL DEV — re-enable before deploying!
 function ProtectedRoute({ children, allowedRoles }) {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-
-  // Redirect to login if not authenticated
-  if (!token) {
-    return <Navigate to="/" />;
-  }
-
-  // Redirect to home/login if role is unauthorized
-  if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to="/" />;
-  }
-
+  // TODO: Re-enable auth checks before pushing to production
+  // const token = localStorage.getItem("token");
+  // const role = localStorage.getItem("role");
+  // if (!token) return <Navigate to="/" />;
+  // if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to="/" />;
   return children;
 }
 

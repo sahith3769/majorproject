@@ -1,17 +1,17 @@
-# 🚀 Smart Placement Portal (Next-Gen Edition)
+# 🚀 MRU CSE Placement Portal
 
-This is a **production-ready** Smart Placement Portal built with the **MERN stack** (MongoDB, Express, React, Node.js) and a powerful **Python Flask ML Service** for job recommendations.
+This is a **production-ready** Corporate Placement Portal built with the **MERN stack** (MongoDB, Express, React, Node.js) and a powerful **Python Flask ML Service** for job recommendations.
 
-It features a **Premium Glassmorphic UI**, role-based access control (Student, Company, Admin), and AI-driven job matching.
+It features a **Classic Official Theme**, role-based access control (Student, Company, Admin), and AI-driven job matching.
 
 ## ✨ Key Features
-- **Modern UI/UX**: Custom "Aurora" dark theme with glassmorphism and smooth animations.
-- **AI Recommendations**: Python-based collaborative filtering to match students with jobs based on skills.
+- **Official Interface**: Professional design with "Classic Official" styling and smooth micro-animations.
+- **AI Recommendations**: Python-based skill matching to suggest the best jobs for students.
 - **Role-Based Dashboards**:
-  - **Students**: View recommendations, track applications, update profile.
-  - **Companies**: Post jobs, view applicants, manage hiring pipeline.
-  - **Admins**: Overview of system activity and stats.
-- **Secure Auth**: JWT authentication, OTP verification, and role protection.
+  - **Students**: Upload resumes, view AI matches, track applications.
+  - **Companies**: Post jobs, review applicants, manage hiring status.
+  - **Admins**: Approve companies and jobs, monitor system-wide stats.
+- **Secure Auth**: JWT authentication, OTP code verification, and Admin Account Approval.
 - **No Docker Required**: Simplified local setup for rapid development.
 
 ## 🛠 Prerequisites

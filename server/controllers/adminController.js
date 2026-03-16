@@ -7,9 +7,11 @@ exports.getDashboard = async (req, res) => {
   try {
     const students = await User.countDocuments({ role: "student" });
     const companies = await User.countDocuments({ role: "company" });
+    const pendingCompanies = await User.countDocuments({ role: "company", approved: false });
     const jobs = await Job.countDocuments();
+    const pendingJobs = await Job.countDocuments({ approved: false });
 
-    res.json({ students, companies, jobs });
+    res.json({ students, companies, pendingCompanies, jobs, pendingJobs });
   } catch (error) {
     logger.error(`Admin Dashboard Error: ${error.message}`);
     res.status(500).json({ error: error.message });
@@ -19,10 +21,23 @@ exports.getDashboard = async (req, res) => {
 /* ================= APPROVE COMPANY ================= */
 exports.approveCompany = async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.params.id, { approved: true });
-    res.json({ msg: "Company Approved Successfully" });
+    const { approved } = req.body; // Can be true or false (rejected)
+    await User.findByIdAndUpdate(req.params.id, { approved });
+    res.json({ msg: `Company ${approved ? 'Approved' : 'Updated'} Successfully` });
   } catch (error) {
     logger.error(`Approve Company Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= APPROVE JOB ================= */
+exports.approveJob = async (req, res) => {
+  try {
+    const { approved } = req.body;
+    await Job.findByIdAndUpdate(req.params.id, { approved });
+    res.json({ msg: `Job ${approved ? 'Approved' : 'Updated'} Successfully` });
+  } catch (error) {
+    logger.error(`Approve Job Error: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 };

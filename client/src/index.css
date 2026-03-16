@@ -1,6 +1,6 @@
 /* =========================================
    CLASSIC OFFICIAL THEME
-   Smart Placement Portal
+   MRU CSE Placement Portal
    ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Georgia:wght@400;700&display=swap');
 
@@ -19,8 +19,8 @@
   --text-muted: #777777;
   --border-color: #ccd0d5;
   --border-strong: #aeb3ba;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.12);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.15);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.18);
   --radius: 4px;
   --radius-md: 6px;
 }
@@ -103,6 +103,7 @@ button {
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   margin: 0;
   transition: none;
+  position: relative; /* Added for absolute centering of brand */
 }
 
 .navbar:hover {
@@ -110,13 +111,28 @@ button {
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
 
-.navbar h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
+.navbar-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.brand-top {
+  font-size: 1.2rem;
+  font-weight: 800;
   color: #ffffff;
-  background: none;
-  -webkit-text-fill-color: initial;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.1em;
+}
+
+.brand-bottom {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  opacity: 0.9;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -309,7 +325,6 @@ button {
   text-shadow: none !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--primary);
   padding-bottom: 0.5rem;
 }
 
@@ -323,7 +338,6 @@ button {
 .card {
   background: #ffffff;
   border: 1px solid var(--border-color);
-  border-top: 3px solid var(--primary);
   border-radius: var(--radius-md);
   padding: 1.25rem 1.5rem;
   transition: box-shadow 0.2s;
@@ -339,7 +353,6 @@ button {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   background: #ffffff;
   border-color: var(--border-color);
-  border-top-color: var(--primary);
 }
 
 .card::after { display: none; }
@@ -457,7 +470,6 @@ button {
   padding: 1.25rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--primary);
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -483,16 +495,9 @@ button {
   box-shadow: none;
 }
 
-.stat-card:nth-child(1) { background: #fff; border-left-color: #1a3c6e; }
 .stat-card:nth-child(1) .stat-icon { background: #1a3c6e; }
-
-.stat-card:nth-child(2) { background: #fff; border-left-color: #2e7d32; }
 .stat-card:nth-child(2) .stat-icon { background: #2e7d32; }
-
-.stat-card:nth-child(3) { background: #fff; border-left-color: #c8372d; }
 .stat-card:nth-child(3) .stat-icon { background: #c8372d; }
-
-.stat-card:nth-child(4) { background: #fff; border-left-color: #e65100; }
 .stat-card:nth-child(4) .stat-icon { background: #e65100; }
 
 /* =========================================
@@ -503,7 +508,6 @@ button {
   padding: 1.5rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  border-top: 3px solid var(--primary);
   margin-bottom: 2rem;
   max-width: 680px;
   box-shadow: var(--shadow-sm);
@@ -582,8 +586,8 @@ input::placeholder, textarea::placeholder {
    ========================================= */
 .nav-back-btn {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.5);
-  color: rgba(255,255,255,0.9);
+  border: 1px solid #000000;
+  color: #000000;
   margin-right: 0.5rem;
   padding: 0.35rem 1rem;
   border-radius: var(--radius);
@@ -593,9 +597,9 @@ input::placeholder, textarea::placeholder {
 }
 
 .nav-back-btn:hover {
-  background: rgba(255,255,255,0.15);
-  color: white;
-  border-color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.05);
+  color: #000000;
+  border-color: #000000;
 }
 
 .file-upload-btn {
@@ -748,3 +752,154 @@ tr:hover {
 .fade-in { animation: none; }
 .delay-1, .delay-2, .delay-3 { animation-delay: 0s; }
 .back-btn:hover { background-color: #dce4f0 !important; }
+
+/* =========================================
+   HOVER ZOOM-IN ANIMATIONS
+   ========================================= */
+
+/* Cards */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.card:hover {
+  transform: scale(1.025) !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.22) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Stat Cards */
+.stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.stat-card:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 12px 32px rgba(26,60,110,0.28) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* All Buttons */
+button,
+.auth-btn,
+.btn-primary,
+.logout-btn,
+.nav-back-btn,
+.auth-secondary-btn,
+.cv-link,
+.auth-toggle-btn {
+  transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.15s ease !important;
+}
+button:hover,
+.auth-btn:hover,
+.btn-primary:hover,
+.nav-back-btn:hover,
+.auth-secondary-btn:hover,
+.auth-toggle-btn:hover {
+  transform: scale(1.04) !important;
+  border: 1px solid #000000 !important;
+}
+.logout-btn:hover {
+  transform: scale(1.06) !important;
+  border: 1px solid #000000 !important;
+}
+.cv-link:hover {
+  transform: scale(1.05) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Card inner buttons (don't double-scale) */
+.card button:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Nav Links */
+.nav-links a {
+  transition: transform 0.15s ease, background 0.2s ease !important;
+  display: inline-block;
+}
+.nav-links a:hover {
+  transform: scale(1.08) !important;
+}
+
+/* Form Inputs & Selects */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+textarea,
+select {
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+input[type="date"]:hover,
+textarea:hover,
+select:hover {
+  transform: scale(1.01) !important;
+  border: 1px solid #000000 !important;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  transform: scale(1.015) !important;
+}
+
+/* Table Rows */
+tr {
+  transition: transform 0.15s ease, background-color 0.15s ease !important;
+}
+tr:hover {
+  transform: scale(1.01) !important;
+  background-color: #e8eef8 !important;
+  outline: 1px solid #000000 !important;
+}
+
+/* Auth Card */
+.auth-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.auth-card:hover {
+  transform: scale(1.015) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.22) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Status Badges */
+.status,
+.pending, .accepted, .rejected {
+  transition: transform 0.15s ease !important;
+  display: inline-block;
+}
+.status:hover,
+.pending:hover, .accepted:hover, .rejected:hover {
+  transform: scale(1.1) !important;
+}
+
+/* File Upload Button */
+.file-upload-btn {
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+.file-upload-btn:hover {
+  transform: scale(1.02) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Job Form */
+.job-form {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.job-form:hover {
+  transform: scale(1.01) !important;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.18) !important;
+  border: 1px solid #000000 !important;
+}
+
+/* Section Title */
+.section-title {
+  transition: transform 0.15s ease !important;
+}
+.section-title:hover {
+  transform: scale(1.02) translateX(4px) !important;
+}

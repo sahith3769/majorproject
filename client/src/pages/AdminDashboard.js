@@ -8,25 +8,31 @@ function AdminDashboard() {
   const [jobs, setJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('overview'); // 'overview', 'applications', 'placed', 'companies', 'jobs'
+  const [stats, setStats] = useState({ pendingJobs: 0, pendingCompanies: 0 });
+  const [view, setView] = useState('overview'); // 'overview', 'applications', 'placed', 'companies', 'jobs', 'approvals'
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [jobsRes, companiesRes, statsRes] = await Promise.all([
+        API.get("/admin/applications"),
+        API.get("/admin/companies"),
+        API.get("/admin/dashboard")
+      ]);
+      setJobs(jobsRes.data || []);
+      setCompanies(companiesRes.data || []);
+      setStats({
+        pendingJobs: statsRes.data.pendingJobs || 0,
+        pendingCompanies: statsRes.data.pendingCompanies || 0
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [jobsRes, companiesRes] = await Promise.all([
-          API.get("/admin/applications"),
-          API.get("/admin/companies")
-        ]);
-        setJobs(jobsRes.data || []);
-        setCompanies(companiesRes.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -52,9 +58,29 @@ function AdminDashboard() {
 
   const handleBack = () => {
     if (view === 'overview') {
-      navigate(-1);
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      navigate("/");
     } else {
       setView('overview');
+    }
+  };
+
+  const handleApproveCompany = async (id, approved) => {
+    try {
+      await API.put(`/admin/approve/${id}`, { approved });
+      fetchData();
+    } catch (error) {
+      console.error("Approval error", error);
+    }
+  };
+
+  const handleApproveJob = async (id, approved) => {
+    try {
+      await API.put(`/admin/approve-job/${id}`, { approved });
+      fetchData();
+    } catch (error) {
+      console.error("Job approval error", error);
     }
   };
 
@@ -65,28 +91,28 @@ function AdminDashboard() {
       case 'applications':
         return (
           <div className="fade-in">
-            <h3 style={{ marginBottom: '20px', color: '#000000' }}>All Applications ({applicationsList.length})</h3>
+            <h3 className="section-title">All Applications ({applicationsList.length})</h3>
             <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <thead style={{ background: '#f8fafc' }}>
+              <table>
+                <thead>
                   <tr>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Student</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Job Title</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Company</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Status</th>
+                    <th>Student</th>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {applicationsList.map((app, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px', color: '#000000' }}>
-                        <div>{app.student?.name || "Unknown"}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{app.student?.email}</div>
+                    <tr key={i}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{app.student?.name || "Unknown"}</div>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{app.student?.email}</div>
                       </td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{app.jobTitle}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{app.companyName}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span className={`status ${app.status}`} style={{ fontSize: '0.8rem', padding: '4px 8px' }}>{app.status}</span>
+                      <td>{app.jobTitle}</td>
+                      <td>{app.companyName}</td>
+                      <td>
+                        <span className={`status ${app.status}`}>{app.status}</span>
                       </td>
                     </tr>
                   ))}
@@ -98,27 +124,27 @@ function AdminDashboard() {
       case 'placed':
         return (
           <div className="fade-in">
-            <h3 style={{ marginBottom: '20px', color: '#000000' }}>Placed Students ({placedStudentsList.length})</h3>
+            <h3 className="section-title">Placed Students ({placedStudentsList.length})</h3>
             <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <thead style={{ background: '#f8fafc' }}>
+              <table>
+                <thead>
                   <tr>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Student</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Job Title</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Company</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Date</th>
+                    <th>Student</th>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {placedStudentsList.map((app, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px', color: '#000000' }}>
-                        <div>{app.student?.name || "Unknown"}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{app.student?.email}</div>
+                    <tr key={i}>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{app.student?.name || "Unknown"}</div>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{app.student?.email}</div>
                       </td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{app.jobTitle}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{app.companyName}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{new Date().toLocaleDateString()}</td>
+                      <td>{app.jobTitle}</td>
+                      <td>{app.companyName}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -129,31 +155,32 @@ function AdminDashboard() {
       case 'companies':
         return (
           <div className="fade-in">
-            <h3 style={{ marginBottom: '20px', color: '#000000' }}>Registered Companies ({companies.length})</h3>
+            <h3 className="section-title">Registered Companies ({companies.length})</h3>
             <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <thead style={{ background: '#f8fafc' }}>
+              <table>
+                <thead>
                   <tr>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Company Name</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Email</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Status</th>
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {companies.map((company, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px', color: '#000000' }}>{company.name}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{company.email}</td>
-                      <td style={{ padding: '12px' }}>
-                        <span style={{
-                          background: company.approved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                          color: company.approved ? '#10b981' : '#f59e0b',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.8rem'
-                        }}>
-                          {company.approved ? 'Approved' : 'Pending'}
-                        </span>
+                    <tr key={i}>
+                      <td>{company.name}</td>
+                      <td>{company.email}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className={`status ${company.approved ? 'accepted' : 'pending'}`}>
+                            {company.approved ? 'Approved' : 'Pending'}
+                          </span>
+                          {!company.approved && (
+                            <button className="btn-primary" onClick={() => handleApproveCompany(company._id, true)} style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
+                              Approve
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -165,28 +192,96 @@ function AdminDashboard() {
       case 'jobs':
         return (
           <div className="fade-in">
-            <h3 style={{ marginBottom: '20px', color: '#000000' }}>All Jobs ({jobs.length})</h3>
+            <h3 className="section-title">All Jobs ({jobs.length})</h3>
             <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <thead style={{ background: '#f8fafc' }}>
+              <table>
+                <thead>
                   <tr>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Title</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Company</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Applicants</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#64748b' }}>Posted On</th>
+                    <th>Title</th>
+                    <th>Company</th>
+                    <th>Applicants</th>
+                    <th>Posted On</th>
                   </tr>
                 </thead>
                 <tbody>
                   {jobs.map((job, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '12px', color: '#000000' }}>{job.title}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{job.company?.name || "Unknown"}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{job.applicants?.length || 0}</td>
-                      <td style={{ padding: '12px', color: '#000000' }}>{new Date(job.createdAt).toLocaleDateString()}</td>
+                    <tr key={i}>
+                      <td>{job.title}</td>
+                      <td>{job.company?.name || "Unknown"}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className={`status ${job.approved ? 'accepted' : 'pending'}`}>
+                            {job.approved ? 'Approved' : 'Pending'}
+                          </span>
+                          {!job.approved && (
+                            <button className="btn-primary" onClick={() => handleApproveJob(job._id, true)} style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
+                              Approve
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td>{job.applicants?.length || 0}</td>
+                      <td>{new Date(job.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        );
+       case 'approvals':
+        const pendingJobsList = jobs.filter(j => !j.approved);
+        const pendingCompaniesList = companies.filter(c => !c.approved);
+        return (
+          <div className="fade-in">
+            <h3 className="section-title">Pending Approvals</h3>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <h4>🏢 Companies ({pendingCompaniesList.length})</h4>
+              {pendingCompaniesList.length === 0 ? <p>No pending companies.</p> : (
+                <div className="table-responsive">
+                  <table>
+                    <thead>
+                      <tr><th>Name</th><th>Email</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                      {pendingCompaniesList.map(c => (
+                        <tr key={c._id}>
+                          <td>{c.name}</td>
+                          <td>{c.email}</td>
+                          <td>
+                            <button className="btn-primary" onClick={() => handleApproveCompany(c._id, true)}>Approve</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h4>💼 Jobs ({pendingJobsList.length})</h4>
+              {pendingJobsList.length === 0 ? <p>No pending jobs.</p> : (
+                <div className="table-responsive">
+                  <table>
+                    <thead>
+                      <tr><th>Title</th><th>Company</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                      {pendingJobsList.map(j => (
+                        <tr key={j._id}>
+                          <td>{j.title}</td>
+                          <td>{j.company?.name}</td>
+                          <td>
+                            <button className="btn-primary" onClick={() => handleApproveJob(j._id, true)}>Approve</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -195,56 +290,70 @@ function AdminDashboard() {
           <>
             {/* Stats Widgets */}
             <div className="widget-row fade-in delay-1">
-              <div className="stat-card" onClick={() => setView('jobs')} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
-                <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1' }}>💼</div>
+              <div className="stat-card" onClick={() => setView('jobs')} style={{ cursor: 'pointer' }}>
+                <div className="stat-icon">💼</div>
                 <div>
-                  <div style={{ color: '#000000', fontSize: '0.85rem' }}>Total Jobs</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#000000' }}>{totalJobs}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Total Jobs</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{totalJobs}</div>
                 </div>
               </div>
-              <div className="stat-card" onClick={() => setView('applications')} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
-                <div className="stat-icon" style={{ background: 'rgba(236, 72, 153, 0.2)', color: '#ec4899' }}>📝</div>
+              <div className="stat-card" onClick={() => setView('applications')} style={{ cursor: 'pointer' }}>
+                <div className="stat-icon" style={{ background: 'var(--secondary)' }}>📝</div>
                 <div>
-                  <div style={{ color: '#000000', fontSize: '0.85rem' }}>Applications</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#000000' }}>{totalApplications}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Applications</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{totalApplications}</div>
                 </div>
               </div>
-              <div className="stat-card" onClick={() => setView('companies')} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
-                <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }}>🏢</div>
+              <div className="stat-card" onClick={() => setView('companies')} style={{ cursor: 'pointer' }}>
+                <div className="stat-icon" style={{ background: 'var(--success)' }}>🏢</div>
                 <div>
-                  <div style={{ color: '#000000', fontSize: '0.85rem' }}>Active Companies</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#000000' }}>{activeCompaniesCount}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Active Companies</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{activeCompaniesCount}</div>
                 </div>
               </div>
-              <div className="stat-card" onClick={() => setView('placed')} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
-                <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }}>🎓</div>
+              <div className="stat-card" onClick={() => setView('placed')} style={{ cursor: 'pointer' }}>
+                <div className="stat-icon" style={{ background: 'var(--warning)' }}>🎓</div>
                 <div>
-                  <div style={{ color: '#000000', fontSize: '0.85rem' }}>Students Placed</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#000000' }}>{totalAccepted}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Students Placed</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{totalAccepted}</div>
                 </div>
               </div>
             </div>
 
+            {(stats.pendingJobs > 0 || stats.pendingCompanies > 0) && (
+              <div className="card fade-in" style={{ border: '2px solid var(--warning)', background: '#fffbeb', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ color: '#92400e', margin: 0 }}>⚠️ Action Required: Pending Approvals</h4>
+                    <p style={{ margin: '5px 0 0', fontSize: '0.9rem' }}>
+                      {stats.pendingCompanies} Companies and {stats.pendingJobs} Jobs are awaiting your review.
+                    </p>
+                  </div>
+                  <button className="btn-primary" onClick={() => setView('approvals')} style={{ background: '#92400e' }}>
+                    Review Now
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="jobs-grid">
               {jobs.map((job, index) => (
                 <div className="card fade-in" key={job._id} style={{ animationDelay: `${index * 0.05}s` }}>
-                  <h4 style={{ marginBottom: '5px', color: '#000000' }}>{job.title}</h4>
-                  <p style={{ color: '#000000', fontSize: '0.9rem', marginBottom: '15px' }}>
-                    🏢 {job.company?.name || "Unknown Company"}
-                  </p>
+                  <h4>{job.title}</h4>
+                  <p className="job-company">🏢 {job.company?.name || "Unknown Company"}</p>
 
-                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '15px' }}>
+                  <div style={{ borderTop: '1px solid var(--border-color)', marginTop: '1rem', paddingTop: '1rem' }}>
                     {job.applicants && job.applicants.length === 0 ? (
-                      <p style={{ fontSize: '0.9rem', color: '#000000' }}>No applicants yet</p>
+                      <p style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>No applicants yet</p>
                     ) : (
                       <>
-                        <h5 style={{ color: '#000000', fontSize: '0.85rem', marginBottom: '10px' }}>Applicants ({job.applicants.length})</h5>
+                        <h5 style={{ fontSize: '0.85rem', marginBottom: '10px' }}>Applicants ({job.applicants.length})</h5>
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                           {job.applicants.map((app, i) =>
                             app.student ? (
-                              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.9rem', background: 'rgba(0,0,0,0.03)', padding: '8px', borderRadius: '6px' }}>
-                                <span style={{ color: '#000000' }}>{app.student?.name}</span>
-                                <span className={`status ${app.status}`} style={{ fontSize: '0.7rem', padding: '2px 8px' }}>{app.status}</span>
+                              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '0.9rem', background: '#f9fafb', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                                <span>{app.student?.name}</span>
+                                <span className={`status ${app.status}`}>{app.status}</span>
                               </li>
                             ) : null
                           )}
@@ -263,11 +372,15 @@ function AdminDashboard() {
   return (
     <div className="dashboard">
       <div className="fade-in">
-        <button className="nav-back-btn" onClick={handleBack} style={{ marginBottom: '1rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-          <span>&larr;</span> Back
+        <button className="nav-back-btn" onClick={handleBack}>
+          &larr; Back
         </button>
-        <h2 style={{ textAlign: 'center', marginBottom: '10px', fontSize: '2.5rem', fontWeight: 'bold', color: '#000000', background: 'none', WebkitTextFillColor: 'initial' }}>Admin Dashboard</h2>
-        <p style={{ textAlign: 'center', color: '#000000', marginBottom: '40px' }}>System Overview & Activity Logs</p>
+        <h2 className="section-title" style={{ textAlign: 'center', fontSize: '2rem' }}>
+          Admin Portal Overview
+        </h2>
+        <p className="auth-subtitle" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          System-wide activity, job placements, and corporate partnerships.
+        </p>
       </div>
 
       {renderContent()}

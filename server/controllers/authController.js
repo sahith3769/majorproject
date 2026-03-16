@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { sendEmail } = require("../utils/sendEmail");
+const { sendEmail, sendAdminNotification } = require("../utils/sendEmail");
 const logger = require("../config/logger");
 
 /* ================= REGISTER ================= */
@@ -37,6 +37,13 @@ exports.register = async (req, res) => {
     });
 
     await sendEmail(email, otp);
+
+    if (role === "company") {
+      // Notify Admin about new company registration
+      sendAdminNotification("new_company", { name, email }).catch(err => 
+        logger.error(`Admin Notification Fail: ${err.message}`)
+      );
+    }
 
     res.json({ msg: "OTP sent to email" });
 
@@ -94,6 +101,11 @@ exports.login = async (req, res) => {
     // 🔥 VERY IMPORTANT CHECK
     if (!user.isVerified)
       return res.status(400).json({ msg: "Please verify your email first" });
+
+    // Check for Admin Approval if user is a Company
+    if (user.role === "company" && !user.approved) {
+      return res.status(403).json({ msg: "Your account is pending admin approval. Please wait for an email confirmation." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)

@@ -9,3 +9,4 @@ node_modules
 /server/uploads
 coverage
 *.log
+access_token.txt

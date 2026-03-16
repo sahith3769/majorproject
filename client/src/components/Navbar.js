@@ -20,7 +20,10 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      <h3>Smart Placement Portal</h3>
+      <div className="navbar-brand">
+        <div className="brand-top">MRU</div>
+        <div className="brand-bottom">CSE PLACEMENT PORTAL</div>
+      </div>
 
       <div className="nav-links">
 

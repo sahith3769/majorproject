@@ -54,6 +54,12 @@ function Login() {
   return (
     <div className={`auth-container ${isCompany ? 'company-theme' : ''}`}>
       <div className="auth-card">
+        {/* Branding Header */}
+        <div className="navbar-brand" style={{ position: 'relative', left: 'auto', transform: 'none', marginBottom: '20px', pointerEvents: 'auto' }}>
+          <div className="brand-top" style={{ color: 'var(--primary)' }}>MRU</div>
+          <div className="brand-bottom" style={{ color: 'var(--text-secondary)' }}>CSE PLACEMENT PORTAL</div>
+        </div>
+
         {/* Tab Switcher */}
         <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', marginBottom: '20px', gap: '5px' }}>
           <button

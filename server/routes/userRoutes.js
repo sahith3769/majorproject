@@ -20,7 +20,20 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [".pdf", ".doc", ".docx"];
+    const ext = require("path").extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only PDF, DOC, and DOCX are allowed."));
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
 
 /* Upload Resume */
 router.post(
@@ -30,9 +43,16 @@ router.post(
   upload.single("resume"),
   async (req, res) => {
     try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Please select a file to upload." });
+      }
+
       const user = await User.findById(req.user.id);
       user.resume = req.file.filename;
       
+      let skillsExtracted = false;
+      let extractError = null;
+
       // 🔥 Automatic Skill Extraction after Upload
       try {
         const axios = require("axios");
@@ -47,6 +67,7 @@ router.post(
         
         const response = await axios.post(`${mlServiceUrl}/analyze-resume`, form, {
           headers: { ...form.getHeaders() },
+          timeout: 10000 // 10s timeout
         });
 
         const { skills } = response.data;
@@ -54,24 +75,30 @@ router.post(
           // Merge unique skills
           user.skills = [...new Set([...user.skills, ...skills])];
           logger.info(`Auto-extracted ${skills.length} skills for user ${user.email} after upload`);
+          skillsExtracted = true;
         }
       } catch (mlError) {
-        logger.error(`Automatic Skill Extraction Failed: ${mlError.message}`);
-        // We don't fail the whole upload if just the skill extraction fails
+        extractError = mlError.response?.data?.error || mlError.message;
+        logger.error(`Automatic Skill Extraction Failed: ${extractError}`);
       }
 
       await user.save();
 
       res.json({ 
-        msg: "Resume Uploaded and Analyzed Successfully", 
+        msg: skillsExtracted 
+          ? "Resume Uploaded and Skills Analyzed Successfully!" 
+          : "Resume Uploaded, but skill analysis failed. You can try analyzing it manually later.", 
         resume: user.resume, 
-        skills: user.skills 
+        skills: user.skills,
+        analysisStatus: skillsExtracted ? "success" : "failed",
+        analysisError: extractError
       });
     } catch (error) {
       logger.error(`Resume Upload Error: ${error.message}`);
       res.status(500).json({ error: error.message });
     }
   }
+
 );
 
 router.put("/profile", protect, async (req, res) => {

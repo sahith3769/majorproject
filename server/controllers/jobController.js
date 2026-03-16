@@ -2,7 +2,7 @@ const Job = require("../models/Job");
 const axios = require("axios");
 const User = require("../models/User");
 const logger = require("../config/logger");
-const { sendStatusEmail } = require("../utils/sendEmail");
+const { sendStatusEmail, sendAdminNotification } = require("../utils/sendEmail");
 
 
 /* ================= CREATE JOB ================= */
@@ -26,8 +26,15 @@ exports.createJob = async (req, res) => {
       salary,
       experience,
       company: req.user.id,
+      approved: false, // Explicitly false until admin approves
     });
 
+    // Notify Admin about new job posting
+    const company = await User.findById(req.user.id);
+    sendAdminNotification("new_job", { 
+      companyName: company?.name || "Unknown Company", 
+      title: job.title 
+    }).catch(err => logger.error(`Admin Notification Fail: ${err.message}`));
 
     res.status(201).json(job);
   } catch (error) {
@@ -40,6 +47,7 @@ exports.createJob = async (req, res) => {
 exports.getJobs = async (req, res) => {
   try {
     const jobs = await Job.find({
+      approved: true, // ONLY APPROVED JOBS
       $or: [
         { deadline: null },
         { deadline: { $gt: new Date() } }
@@ -209,6 +217,7 @@ exports.getRecommendedJobs = async (req, res) => {
 
     // ✅ FILTER EXPIRED JOBS HERE
     const jobs = await Job.find({
+      approved: true, // ONLY APPROVED JOBS
       $or: [
         { deadline: null },
         { deadline: { $gt: today } }

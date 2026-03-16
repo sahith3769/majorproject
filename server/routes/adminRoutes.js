@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getDashboard,
   approveCompany,
+  approveJob,
   getAllApplications,
   getAllCompanies,
   getAllStudents,
@@ -16,6 +17,9 @@ router.get("/dashboard", protect, roleCheck(["admin"]), getDashboard);
 
 /* Approve Company */
 router.put("/approve/:id", protect, roleCheck(["admin"]), approveCompany);
+
+/* Approve Job */
+router.put("/approve-job/:id", protect, roleCheck(["admin"]), approveJob);
 
 /* See All Applications */
 router.get("/applications", protect, roleCheck(["admin"]), getAllApplications);

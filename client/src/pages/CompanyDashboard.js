@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
@@ -7,6 +8,7 @@ function CompanyDashboard() {
   const [jobs, setJobs] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -96,7 +98,11 @@ function CompanyDashboard() {
     }
   };
 
-  if (loading) return <div className="dashboard"><Loader /></div>;
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
 
   const activeJobsCount = jobs.length;
   const totalApplicants = jobs.reduce((acc, job) => acc + (job.applicants?.length || 0), 0);
@@ -105,29 +111,44 @@ function CompanyDashboard() {
   return (
     <div className="dashboard">
       <div className="fade-in">
-        <h2 className="section-title" style={{ borderBottom: 'none', marginBottom: '10px' }}>
-          🏢 <span style={{ marginLeft: '10px', color: '#000000' }}>{user?.name || "Company"}</span> Dashboard
+        <button className="nav-back-btn" onClick={handleLogout} style={{ marginBottom: '1rem' }}>
+          &larr; Back
+        </button>
+        <h2 className="section-title">
+          🏢 {user?.name || "Company"} Dashboard
         </h2>
-        <p style={{ color: '#000000', marginBottom: '40px', fontSize: '1.1rem' }}>
+        <p className="auth-subtitle" style={{ textAlign: 'left', marginBottom: '2rem' }}>
           Manage your job postings and find the best talent.
         </p>
+
+        {user && !user.approved && (
+          <div className="card fade-in" style={{ border: '2px solid var(--warning)', background: '#fffbeb', marginBottom: '2rem' }}>
+            <h4 style={{ color: '#92400e', margin: 0 }}>⚠️ Account Pending Approval</h4>
+            <p style={{ margin: '5px 0 0', fontSize: '0.9rem' }}>
+              Your account is currently under review by the administrator. You can post jobs, but they will not be visible to students until your account and the jobs are approved.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Stats Widgets */}
       <div className="widget-row fade-in delay-1">
         <div className="stat-card">
+          <div className="stat-icon">💼</div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '500' }}>Active Jobs</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{activeJobsCount}</div>
           </div>
         </div>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--success)' }}>👥</div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '500' }}>Total Applicants</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{totalApplicants}</div>
           </div>
         </div>
         <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--warning)' }}>⏳</div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '500' }}>Pending Review</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{pendingActions}</div>
@@ -136,166 +157,152 @@ function CompanyDashboard() {
       </div>
 
       {/* ================= CREATE JOB FORM ================= */}
-      <div className="job-form fade-in delay-2" style={{ maxWidth: '100%', marginBottom: '40px' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.4rem' }}>Post New Job</h3>
+      <div className="job-form fade-in delay-2">
+        <h3 className="section-title" style={{ marginTop: 0 }}>Post New Job</h3>
 
-        <form onSubmit={createJob} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', alignItems: 'end' }}>
-          <div className="form-group" style={{ margin: 0, gridColumn: 'span 2' }}>
-            <label style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Job Title</label>
+        <form onSubmit={createJob}>
+          <div className="form-group">
+            <label>Job Title</label>
             <input
               placeholder="e.g. Senior React Developer"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
-              style={{ padding: '1.2rem', fontSize: '1.2rem' }}
             />
           </div>
 
-          <div className="form-group" style={{ margin: 0 }}>
-            <label style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Salary / CTC</label>
-            <input
-              placeholder="e.g. 10 LPA or $80,000"
-              value={form.salary}
-              onChange={(e) => setForm({ ...form, salary: e.target.value })}
-              required
-              style={{ padding: '1.1rem', fontSize: '1.1rem' }}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+            <div className="form-group">
+              <label>Salary / CTC</label>
+              <input
+                placeholder="e.g. 10 LPA"
+                value={form.salary}
+                onChange={(e) => setForm({ ...form, salary: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Deadline</label>
+              <input
+                type="date"
+                value={form.deadline}
+                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                style={{ colorScheme: 'light' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Experience</label>
+              <input
+                placeholder="e.g. 2+ Years"
+                value={form.experience}
+                onChange={(e) => setForm({ ...form, experience: e.target.value })}
+              />
+            </div>
           </div>
 
-          <div className="form-group" style={{ margin: 0 }}>
-            <label>Deadline</label>
-            <input
-              type="date"
-              value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-              style={{ colorScheme: 'light' }}
-            />
-          </div>
-
-          <div className="form-group" style={{ margin: 0 }}>
-            <label>Experience Level</label>
-            <input
-              placeholder="e.g. 2+ Years or Fresher"
-              value={form.experience}
-              onChange={(e) => setForm({ ...form, experience: e.target.value })}
-              style={{ padding: '1.1rem', fontSize: '1.1rem' }}
-            />
-          </div>
-
-          <div className="form-group" style={{ margin: 0, gridColumn: '1 / -1' }}>
+          <div className="form-group">
             <label>Description</label>
             <textarea
               placeholder="Describe the role and responsibilities..."
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               required
-              style={{ minHeight: '100px', resize: 'vertical' }}
+              style={{ minHeight: '100px' }}
             />
           </div>
 
-          <div className="form-group" style={{ margin: 0, gridColumn: '1 / -1' }}>
-            <label>Required Skills <small style={{ fontWeight: 400, opacity: 0.7 }}>(Comma separated)</small></label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                placeholder="e.g. React, Node.js, MongoDB"
-                value={form.skillsRequired}
-                onChange={(e) => setForm({ ...form, skillsRequired: e.target.value })}
-                required
-                style={{ flex: 1 }}
-              />
-              <button className="btn-primary" style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                Post Job
-              </button>
-            </div>
+          <div className="form-group">
+            <label>Required Skills (Comma separated)</label>
+            <input
+              placeholder="e.g. React, Node.js, MongoDB"
+              value={form.skillsRequired}
+              onChange={(e) => setForm({ ...form, skillsRequired: e.target.value })}
+              required
+            />
           </div>
+
+          <button className="btn-primary" type="submit">
+            Post Job Opportunity
+          </button>
         </form>
       </div>
 
       {/* ================= JOB LIST ================= */}
-      <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.4rem' }} className="fade-in delay-3">📋 Your Job Postings</h3>
+      <h3 className="section-title fade-in delay-3">📋 Your Job Postings</h3>
 
-      <div className="jobs-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
-
+      <div className="jobs-grid">
         {jobs.length === 0 ? (
-          <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+          <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
             <p>No jobs posted yet.</p>
           </div>
         ) : (
           jobs.map((job, index) => (
-            <div className="card fade-in" key={job._id} style={{ animationDelay: `${index * 0.1}s`, position: 'relative' }}>
-
+            <div className="card fade-in" key={job._id} style={{ animationDelay: `${index * 0.1}s` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h4 style={{ fontSize: '1.4rem', color: 'var(--text-primary)', marginBottom: '5px' }}>{job.title}</h4>
-                  {job.salary && (
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                      Salary: {job.salary}
-                    </p>
-                  )}
-                  {job.experience && (
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                      Experience: {job.experience}
-                    </p>
-                  )}
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                    📅 Deadline: {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No Deadline'}
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h4 style={{ margin: 0 }}>{job.title}</h4>
+                    <span className={`status ${job.approved ? 'accepted' : 'pending'}`} style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                      {job.approved ? 'Approved' : 'Pending Approval'}
+                    </span>
+                  </div>
+                  <p style={{ marginTop: '8px' }}><strong>Salary:</strong> {job.salary}</p>
+                  <p><strong>Exp:</strong> {job.experience}</p>
+                  <p>📅 {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No Deadline'}</p>
                 </div>
-                <button className="danger" onClick={() => deleteJob(job._id)} style={{ padding: '6px 12px', fontSize: '0.8rem', background: '#ffe4e6', color: '#be123c', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer' }}>
+                <button className="btn-danger" onClick={() => deleteJob(job._id)} style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
                   🗑 Delete
                 </button>
               </div>
 
-              <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '15px' }}>
-                <h5 style={{ marginBottom: '15px', color: 'var(--text-secondary)' }}>
+              <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                <h5 style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>
                   Applicants ({job.applicants?.length || 0})
                 </h5>
 
                 {(!job.applicants || job.applicants.length === 0) ? (
-                  <p style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--text-secondary)' }}>No applications yet.</p>
+                  <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>No applications yet.</p>
                 ) : (
-                  <div style={{ display: 'grid', gap: '10px' }}>
+                  <div style={{ display: 'grid', gap: '8px' }}>
                     {job.applicants.map((app, i) => (
                       app.student ? (
                         <div key={i} style={{
-                          background: '#f8fafc', // Light background
-                          padding: '12px',
-                          borderRadius: '8px',
-                          border: '1px solid #e2e8f0', // Light border
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '10px'
+                          background: '#f9fafb',
+                          padding: '0.75rem',
+                          borderRadius: 'var(--radius)',
+                          border: '1px solid var(--border-color)'
                         }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{app.student.name}</div>
-                            <span className={`status ${app.status}`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>{app.status}</span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <div style={{ fontWeight: 600 }}>{app.student.name}</div>
+                            <span className={`status ${app.status}`}>{app.status}</span>
                           </div>
 
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                            {app.student.email} • <strong>Exp: {app.student.experience || 0} Yrs</strong>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {app.student.email} • Exp: {app.student.experience || 0} Yrs
                           </div>
 
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
                             {app.student.resume ? (
                               <a
                                 className="cv-link"
                                 href={`${BASE_URL}/uploads/${app.student.resume}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{ fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline', fontWeight: '500' }}
                               >
-                                📄 View Resume
+                                View CV
                               </a>
                             ) : (
-                              <span style={{ fontSize: '0.8rem', color: '#000000' }}>No Resume</span>
+                              <span style={{ fontSize: '0.8rem' }}>No CV</span>
                             )}
 
                             {app.status === 'pending' && (
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button onClick={() => updateStatus(job._id, app.student._id, "accepted")} style={{ padding: '6px 12px', fontSize: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(5, 150, 105, 0.2)' }}>
+                              <div style={{ display: 'flex', gap: '5px' }}>
+                                <button onClick={() => updateStatus(job._id, app.student._id, "accepted")} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'var(--success)' }}>
                                   Accept
                                 </button>
-                                <button onClick={() => updateStatus(job._id, app.student._id, "rejected")} style={{ padding: '6px 12px', fontSize: '0.75rem', background: '#ffffff', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', cursor: 'pointer' }}>
+                                <button className="btn-danger" onClick={() => updateStatus(job._id, app.student._id, "rejected")} style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
                                   Reject
                                 </button>
                               </div>
