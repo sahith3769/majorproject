@@ -39,8 +39,12 @@ const sendEmail = async (email, otp) => {
     await mailerSendApi.post("/email", emailParams);
     logger.info(`OTP email sent successfully to ${email}`);
   } catch (error) {
-    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
-    logger.error(`MailerSend OTP Error: ${errorMsg}`);
+    if (error.response) {
+      logger.error(`MailerSend OTP Error Details: ${JSON.stringify(error.response.data)}`);
+      logger.error(`MailerSend OTP Status: ${error.response.status}`);
+    } else {
+      logger.error(`MailerSend OTP Error: ${error.message}`);
+    }
     throw new Error("Failed to send verification email. Please try again later.");
   }
 };

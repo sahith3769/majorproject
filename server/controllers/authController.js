@@ -17,11 +17,26 @@ exports.register = async (req, res) => {
     const lowerUsername = username.toLowerCase();
 
     const existingUser = await User.findOne({ $or: [{ email: lowerEmail }, { username: lowerUsername }] });
-    if (existingUser)
+    
+    if (existingUser) {
+      // If user exists but is NOT verified, allow re-sending OTP
+      if (!existingUser.isVerified) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        existingUser.otp = otp;
+        existingUser.otpExpiry = Date.now() + 5 * 60 * 1000;
+        // Also update name/role just in case they changed it
+        existingUser.name = name;
+        existingUser.role = role;
+        
+        await existingUser.save();
+        await sendEmail(email, otp);
+        
+        return res.json({ msg: "Registration already initiated. A new OTP has been sent to your email." });
+      }
       return res.status(400).json({ msg: "User or Email already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await User.create({
