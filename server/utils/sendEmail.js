@@ -9,8 +9,12 @@ const mailerSendApi = axios.create({
   baseURL: "https://api.mailersend.com/v1",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
   },
+});
+
+/* Helper to get authorization header */
+const getAuthHeaders = () => ({
+  Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
 });
 
 const sendEmail = async (email, otp) => {
@@ -36,7 +40,10 @@ const sendEmail = async (email, otp) => {
   };
 
   try {
-    await mailerSendApi.post("/email", emailParams);
+    await mailerSendApi.post("/email", {
+      ...emailParams,
+      text: `Welcome to MRU CSE Placement Portal. Your OTP is: ${otp}`,
+    }, { headers: getAuthHeaders() });
     logger.info(`OTP email sent successfully to ${email}`);
   } catch (error) {
     if (error.response) {
@@ -90,7 +97,14 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
   };
 
   try {
-    await mailerSendApi.post("/email", emailParams);
+    const textMessage = status === "accepted" ? 
+      `Congratulations! Your application for ${jobTitle} has been accepted.` : 
+      `Your application for ${jobTitle} has been updated to: ${status}`;
+
+    await mailerSendApi.post("/email", {
+      ...emailParams,
+      text: textMessage,
+    }, { headers: getAuthHeaders() });
     logger.info(`Status update email sent to ${email}`);
   } catch (error) {
     const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
@@ -143,7 +157,10 @@ const sendAdminNotification = async (type, details) => {
   };
 
   try {
-    await mailerSendApi.post("/email", emailParams);
+    await mailerSendApi.post("/email", {
+      ...emailParams,
+      text: `Update for Admin: ${subject}`,
+    }, { headers: getAuthHeaders() });
     logger.info(`Admin notification (${type}) sent successfully`);
   } catch (error) {
     const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
