@@ -1,57 +1,68 @@
-const nodemailer = require("nodemailer");
+const axios = require("axios");
 const logger = require("../config/logger");
 
+const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
+
 /* 
-  Nodemailer Setup
-  Using SMTP for flexibility on production platforms like Render.
+  EmailJS REST API Setup
+  Uses standard HTTP port 443 which solves the Render SMTP firewall block.
 */
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 587,
-  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const sendEmailJS = async (to_email, subject, html_content) => {
+  const serviceId = process.env.EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_TEMPLATE_ID;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
 
-const sendEmail = async (email, otp) => {
-  const mailOptions = {
-    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: "OTP Verification - MRU CSE Placement Portal",
-    text: `Welcome to MRU CSE Placement Portal. Your OTP is: ${otp}`,
-    html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-        <div style="background-color: #1e293b; padding: 30px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">MRU CSE Placement Portal</h1>
-        </div>
-        <div style="padding: 40px; color: #334155;">
-          <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Verify Your Account</h2>
-          <p style="font-size: 16px; line-height: 1.6;">Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.</p>
-          
-          <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; text-align: center; margin: 30px 0;">
-            <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #2563eb;">${otp}</span>
-          </div>
+  if (!serviceId || !templateId || !publicKey) {
+    logger.error("Missing EmailJS credentials in .env");
+    return;
+  }
 
-          <p style="font-size: 14px; color: #64748b; line-height: 1.5;">If you did not attempt to sign up or log in, please secure your account or ignore this email.</p>
-        </div>
-        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-          <p style="font-size: 12px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
-        </div>
-      </div>
-    `,
+  const payload = {
+    service_id: serviceId,
+    template_id: templateId,
+    user_id: publicKey,
+    template_params: {
+      to_email: to_email,
+      subject: subject,
+      message_html: html_content
+    }
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`[SUCCESS] OTP email sent successfully to ${email}`);
-    logger.info(`OTP email sent successfully to ${email}`);
+    const response = await axios.post(EMAILJS_URL, payload);
+    console.log(`[SUCCESS] Email sent successfully to ${to_email}`);
+    logger.info(`Email sent successfully to ${to_email}`);
   } catch (error) {
-    console.error(`[CRITICAL Email Send Error]:`, error); // Force output to raw console
-    logger.error(`Nodemailer OTP Error: ${error.message}`);
-    throw new Error("Failed to send verification email. Please try again later.");
+    const errData = error.response ? error.response.data : error.message;
+    console.error(`[CRITICAL Email Send Error]:`, errData); 
+    logger.error(`EmailJS Error: ${JSON.stringify(errData)}`);
+    throw new Error("Failed to send email. Please try again later.");
   }
+};
+
+const sendEmail = async (email, otp) => {
+  const subject = "OTP Verification - MRU CSE Placement Portal";
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #1e293b; padding: 30px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">MRU CSE Placement Portal</h1>
+      </div>
+      <div style="padding: 40px; color: #334155;">
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Verify Your Account</h2>
+        <p style="font-size: 16px; line-height: 1.6;">Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.</p>
+        
+        <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; text-align: center; margin: 30px 0;">
+          <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #2563eb;">${otp}</span>
+        </div>
+
+        <p style="font-size: 14px; color: #64748b; line-height: 1.5;">If you did not attempt to sign up or log in, please secure your account or ignore this email.</p>
+      </div>
+      <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  await sendEmailJS(email, subject, html);
 };
 
 const sendStatusEmail = async (email, jobTitle, status, studentName) => {
@@ -79,22 +90,7 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     `;
   }
 
-  const mailOptions = {
-    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: subject,
-    text: status === "accepted" ? 
-      `Congratulations! Your application for ${jobTitle} has been accepted.` : 
-      `Your application for ${jobTitle} has been updated to: ${status}`,
-    html: message,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    logger.info(`Status update email sent to ${email}`);
-  } catch (error) {
-    logger.error(`Nodemailer Status Email Error: ${error.message}`);
-  }
+  await sendEmailJS(email, subject, message);
 };
 
 const sendAdminNotification = async (type, details) => {
@@ -126,20 +122,7 @@ const sendAdminNotification = async (type, details) => {
     `;
   }
 
-  const mailOptions = {
-    from: `"Placement Portal System" <${process.env.SMTP_USER}>`,
-    to: adminEmail,
-    subject: subject,
-    text: `Update for Admin: ${subject}`,
-    html: message,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    logger.info(`Admin notification (${type}) sent successfully`);
-  } catch (error) {
-    logger.error(`Admin Notification Error: ${error.message}`);
-  }
+  await sendEmailJS(adminEmail, subject, message);
 };
 
 module.exports = { sendEmail, sendStatusEmail, sendAdminNotification };
