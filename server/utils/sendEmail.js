@@ -7,10 +7,11 @@ const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
   EmailJS REST API Setup
   Uses standard HTTP port 443 which solves the Render SMTP firewall block.
 */
-const sendEmailJS = async (to_email, subject, html_content) => {
+const sendEmailJS = async (to_email, subject, html_content, otp = "") => {
   const serviceId = process.env.EMAILJS_SERVICE_ID;
   const templateId = process.env.EMAILJS_TEMPLATE_ID;
   const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
 
   if (!serviceId || !templateId || !publicKey) {
     logger.error("Missing EmailJS credentials in .env");
@@ -21,10 +22,12 @@ const sendEmailJS = async (to_email, subject, html_content) => {
     service_id: serviceId,
     template_id: templateId,
     user_id: publicKey,
+    accessToken: privateKey,
     template_params: {
       to_email: to_email,
       subject: subject,
-      message_html: html_content
+      message_html: html_content,
+      otp: otp // Added so the template {{otp}} tag works
     }
   };
 
@@ -62,7 +65,7 @@ const sendEmail = async (email, otp) => {
       </div>
     </div>
   `;
-  await sendEmailJS(email, subject, html);
+  await sendEmailJS(email, subject, html, otp);
 };
 
 const sendStatusEmail = async (email, jobTitle, status, studentName) => {
