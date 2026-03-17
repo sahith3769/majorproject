@@ -45,23 +45,31 @@ const sendEmailJS = async (to_email, subject, html_content, otp = "") => {
 
 const sendEmail = async (email, otp) => {
   const subject = "OTP Verification - MRU CSE Placement Portal";
+  
+  // Format the OTP to have spaces between digits for the design
+  const spacedOtp = otp.toString().split('').join(' ');
+
   const html = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #1e293b; padding: 30px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">MRU CSE Placement Portal</h1>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #1a202c; padding: 24px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">MRU CSE Placement Portal</h1>
       </div>
       <div style="padding: 40px; color: #334155;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Verify Your Account</h2>
-        <p style="font-size: 16px; line-height: 1.6;">Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.</p>
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">Verify Your Account</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #475569;">
+          Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.
+        </p>
         
-        <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; text-align: center; margin: 30px 0;">
-          <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #2563eb;">${otp}</span>
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; margin: 35px 0;">
+          <span style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 38px; font-weight: 700; color: #3b82f6; letter-spacing: 8px;">${spacedOtp}</span>
         </div>
 
-        <p style="font-size: 14px; color: #64748b; line-height: 1.5;">If you did not attempt to sign up or log in, please secure your account or ignore this email.</p>
+        <p style="font-size: 14px; color: #64748b; line-height: 1.6;">
+          If you did not attempt to sign up or log in, please secure your account or ignore this email.
+        </p>
       </div>
-      <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-        <p style="font-size: 12px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
+      <div style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #f1f5f9;">
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
       </div>
     </div>
   `;
