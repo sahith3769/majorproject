@@ -45,8 +45,10 @@ const sendEmail = async (email, otp) => {
 
   try {
     await transporter.sendMail(mailOptions);
+    console.log(`[SUCCESS] OTP email sent successfully to ${email}`);
     logger.info(`OTP email sent successfully to ${email}`);
   } catch (error) {
+    console.error(`[CRITICAL Email Send Error]:`, error); // Force output to raw console
     logger.error(`Nodemailer OTP Error: ${error.message}`);
     throw new Error("Failed to send verification email. Please try again later.");
   }
