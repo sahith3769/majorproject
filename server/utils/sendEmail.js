@@ -17,19 +17,18 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (email, otp) => {
   const mailOptions = {
-    from: `"cseplacements" <${process.env.SMTP_USER}>`,
+    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: "OTP Verification - cseplacements Portal",
-    text: `Welcome to cseplacements MRU. Your OTP is: ${otp}`,
+    subject: "OTP Verification - MRU CSE Placement Portal",
+    text: `Welcome to MRU CSE Placement Portal. Your OTP is: ${otp}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
         <div style="background-color: #1e293b; padding: 30px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">cseplacements</h1>
-          <p style="color: #94a3b8; margin: 5px 0 0 0; font-size: 14px;">MRU CSE Placement Portal</p>
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">MRU CSE Placement Portal</h1>
         </div>
         <div style="padding: 40px; color: #334155;">
           <h2 style="color: #0f172a; margin-top: 0; font-size: 20px;">Verify Your Account</h2>
-          <p style="font-size: 16px; line-height: 1.6;">Welcome to the <strong>cseplacements</strong> portal. Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.</p>
+          <p style="font-size: 16px; line-height: 1.6;">Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.</p>
           
           <div style="background-color: #f1f5f9; padding: 25px; border-radius: 8px; text-align: center; margin: 30px 0;">
             <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #2563eb;">${otp}</span>
@@ -38,8 +37,7 @@ const sendEmail = async (email, otp) => {
           <p style="font-size: 14px; color: #64748b; line-height: 1.5;">If you did not attempt to sign up or log in, please secure your account or ignore this email.</p>
         </div>
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-          <p style="font-size: 12px; color: #94a3b8; margin: 0;">Sent by <strong>cseplacements</strong></p>
-          <p style="font-size: 11px; color: #cbd5e1; margin: 5px 0 0 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
         </div>
       </div>
     `,
@@ -62,14 +60,14 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     message = `
       <h3>Congratulations, ${studentName}! 🎉</h3>
       <p>We are pleased to inform you that your application for <strong>${jobTitle}</strong> has been <strong>ACCEPTED</strong>.</p>
-      <p>The <strong>cseplacements</strong> cell or the company will reach out to you shortly for the next steps.</p>
+      <p>The company will reach out to you shortly for the next steps.</p>
     `;
   } else if (status === "rejected") {
     message = `
       <h3>Application Update</h3>
       <p>Dear ${studentName},</p>
       <p>Thank you for applying for <strong>${jobTitle}</strong>.</p>
-      <p>After careful review, the recruitment team at <strong>cseplacements</strong> regrets to inform you that we will not be moving forward with your application at this time.</p>
+      <p>After careful review, we regret to inform you that we will not be moving forward with your application at this time.</p>
       <p>We wish you the best in your future endeavors.</p>
     `;
   } else {
@@ -80,25 +78,13 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
   }
 
   const mailOptions = {
-    from: `"cseplacements" <${process.env.SMTP_USER}>`,
+    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
     to: email,
     subject: subject,
     text: status === "accepted" ? 
       `Congratulations! Your application for ${jobTitle} has been accepted.` : 
       `Your application for ${jobTitle} has been updated to: ${status}`,
-    html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-        <div style="background-color: #1e293b; padding: 20px; text-align: center;">
-          <h2 style="color: #ffffff; margin: 0; font-size: 18px;">cseplacements</h2>
-        </div>
-        <div style="padding: 30px; color: #334155;">
-          ${message}
-        </div>
-        <div style="background-color: #f8fafc; padding: 15px; text-align: center; border-top: 1px solid #e2e8f0;">
-          <p style="font-size: 11px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell</p>
-        </div>
-      </div>
-    `,
+    html: message,
   };
 
   try {
@@ -118,7 +104,7 @@ const sendAdminNotification = async (type, details) => {
     subject = "New Company Registration - Review Required";
     message = `
       <h3>New Company Registration</h3>
-      <p>A new recruiter has registered on the <strong>cseplacements</strong> portal:</p>
+      <p>A new recruiter has registered on the portal:</p>
       <ul>
         <li><strong>Name:</strong> ${details.name}</li>
         <li><strong>Email:</strong> ${details.email}</li>
@@ -129,7 +115,7 @@ const sendAdminNotification = async (type, details) => {
     subject = "New Job Posting - Approval Needed";
     message = `
       <h3>New Job Posting Awaiting Review</h3>
-      <p>A company has posted a new job opportunity on <strong>cseplacements</strong>:</p>
+      <p>A company has posted a new job opportunity:</p>
       <ul>
         <li><strong>Company:</strong> ${details.companyName}</li>
         <li><strong>Job Title:</strong> ${details.title}</li>
@@ -139,16 +125,11 @@ const sendAdminNotification = async (type, details) => {
   }
 
   const mailOptions = {
-    from: `"cseplacements System" <${process.env.SMTP_USER}>`,
+    from: `"Placement Portal System" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     subject: subject,
     text: `Update for Admin: ${subject}`,
-    html: `
-      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
-        <h2 style="color: #1e293b;">cseplacements Admin Alert</h2>
-        ${message}
-      </div>
-    `,
+    html: message,
   };
 
   try {
