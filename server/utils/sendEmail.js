@@ -1,35 +1,26 @@
-const axios = require("axios");
+const nodemailer = require("nodemailer");
 const logger = require("../config/logger");
 
 /* 
-  Direct HTTP API helper for MailerSend
-  This avoids SDK dependency issues on production platforms like Render.
+  Nodemailer Setup
+  Using SMTP for flexibility on production platforms like Render.
 */
-const mailerSendApi = axios.create({
-  baseURL: "https://api.mailersend.com/v1",
-  headers: {
-    "Content-Type": "application/json",
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT || 587,
+  secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
-/* Helper to get authorization header */
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${process.env.MAILERSEND_API_KEY}`,
-});
-
 const sendEmail = async (email, otp) => {
-  const emailParams = {
-    from: {
-      email: process.env.MAILERSEND_FROM_EMAIL || "MS_Yhzala@test-2p0347z011plzdrn.mlsender.net",
-      name: "MRU CSE Placement Portal",
-    },
-    to: [
-      {
-        email: email,
-        name: "Student",
-      },
-    ],
+  const mailOptions = {
+    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
+    to: email,
     subject: "OTP Verification - MRU CSE Placement Portal",
+    text: `Welcome to MRU CSE Placement Portal. Your OTP is: ${otp}`,
     html: `
       <h3>Welcome to MRU CSE Placement Portal</h3>
       <p>Your OTP for account verification is:</p>
@@ -40,18 +31,10 @@ const sendEmail = async (email, otp) => {
   };
 
   try {
-    await mailerSendApi.post("/email", {
-      ...emailParams,
-      text: `Welcome to MRU CSE Placement Portal. Your OTP is: ${otp}`,
-    }, { headers: getAuthHeaders() });
+    await transporter.sendMail(mailOptions);
     logger.info(`OTP email sent successfully to ${email}`);
   } catch (error) {
-    if (error.response) {
-      logger.error(`MailerSend OTP Error Details: ${JSON.stringify(error.response.data)}`);
-      logger.error(`MailerSend OTP Status: ${error.response.status}`);
-    } else {
-      logger.error(`MailerSend OTP Error: ${error.message}`);
-    }
+    logger.error(`Nodemailer OTP Error: ${error.message}`);
     throw new Error("Failed to send verification email. Please try again later.");
   }
 };
@@ -81,34 +64,21 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     `;
   }
 
-  const emailParams = {
-    from: {
-      email: process.env.MAILERSEND_FROM_EMAIL || "MS_Yhzala@test-2p0347z011plzdrn.mlsender.net",
-      name: "MRU CSE Placement Portal",
-    },
-    to: [
-      {
-        email: email,
-        name: studentName,
-      },
-    ],
+  const mailOptions = {
+    from: `"MRU CSE Placement Portal" <${process.env.SMTP_USER}>`,
+    to: email,
     subject: subject,
+    text: status === "accepted" ? 
+      `Congratulations! Your application for ${jobTitle} has been accepted.` : 
+      `Your application for ${jobTitle} has been updated to: ${status}`,
     html: message,
   };
 
   try {
-    const textMessage = status === "accepted" ? 
-      `Congratulations! Your application for ${jobTitle} has been accepted.` : 
-      `Your application for ${jobTitle} has been updated to: ${status}`;
-
-    await mailerSendApi.post("/email", {
-      ...emailParams,
-      text: textMessage,
-    }, { headers: getAuthHeaders() });
+    await transporter.sendMail(mailOptions);
     logger.info(`Status update email sent to ${email}`);
   } catch (error) {
-    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
-    logger.error(`MailerSend Status Email Error: ${errorMsg}`);
+    logger.error(`Nodemailer Status Email Error: ${error.message}`);
   }
 };
 
@@ -141,30 +111,19 @@ const sendAdminNotification = async (type, details) => {
     `;
   }
 
-  const emailParams = {
-    from: {
-      email: process.env.MAILERSEND_FROM_EMAIL || "MS_Yhzala@test-2p0347z011plzdrn.mlsender.net",
-      name: "Placement Portal System",
-    },
-    to: [
-      {
-        email: adminEmail,
-        name: "Admin",
-      },
-    ],
+  const mailOptions = {
+    from: `"Placement Portal System" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
     subject: subject,
+    text: `Update for Admin: ${subject}`,
     html: message,
   };
 
   try {
-    await mailerSendApi.post("/email", {
-      ...emailParams,
-      text: `Update for Admin: ${subject}`,
-    }, { headers: getAuthHeaders() });
+    await transporter.sendMail(mailOptions);
     logger.info(`Admin notification (${type}) sent successfully`);
   } catch (error) {
-    const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
-    logger.error(`Admin Notification Error: ${errorMsg}`);
+    logger.error(`Admin Notification Error: ${error.message}`);
   }
 };
 
