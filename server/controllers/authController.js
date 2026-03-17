@@ -29,7 +29,8 @@ exports.register = async (req, res) => {
         existingUser.role = role;
         
         await existingUser.save();
-        await sendEmail(email, otp);
+        // Send email in background to prevent slow response
+        sendEmail(email, otp).catch(err => logger.error(`Re-send OTP Email Error: ${err.message}`));
         
         return res.json({ msg: "Registration already initiated. A new OTP has been sent to your email." });
       }
@@ -51,7 +52,8 @@ exports.register = async (req, res) => {
       isVerified: false,
     });
 
-    await sendEmail(email, otp);
+    // Send initial OTP email in background to avoid blocking the user
+    sendEmail(email, otp).catch(err => logger.error(`Initial OTP Email Error: ${err.message}`));
 
     if (role === "company") {
       // Notify Admin about new company registration
