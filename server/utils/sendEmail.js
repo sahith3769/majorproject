@@ -45,33 +45,40 @@ const sendEmailJS = async (to_email, subject, html_content, otp = "") => {
 
 const sendEmail = async (email, otp) => {
   const subject = "OTP Verification - MRU CSE Placement Portal";
-  
-  // Format the OTP to have spaces between digits for the design
-  const spacedOtp = otp.toString().split('').join(' ');
-
   const html = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #1a202c; padding: 24px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">MRU CSE Placement Portal</h1>
-      </div>
-      <div style="padding: 40px; color: #334155;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">Verify Your Account</h2>
-        <p style="font-size: 16px; line-height: 1.6; color: #475569;">
-          Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.
-        </p>
-        
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; margin: 35px 0;">
-          <span style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 38px; font-weight: 700; color: #3b82f6; letter-spacing: 8px;">${spacedOtp}</span>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f1f5f9;">
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; max-width: 600px; margin: 20px auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #1a202c; padding: 30px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.5px;">MRU CSE Placement Portal</h1>
         </div>
+        <div style="padding: 40px 30px; color: #334155; text-align: left;">
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">Verify Your Account</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #475569;">
+            Welcome to the Placement Portal! Please use the following One-Time Password (OTP) to complete your verification process. This code is valid for <strong>5 minutes</strong>.
+          </p>
+          
+          <div style="background-color: #f8fafc; padding: 30px 20px; border-radius: 12px; text-align: center; margin: 35px 0; border: 1px solid #f1f5f9;">
+            <span style="font-family: inherit; font-size: 42px; font-weight: 800; color: #3b82f6; letter-spacing: 12px; display: inline-block; padding-left: 12px;">${otp}</span>
+          </div>
 
-        <p style="font-size: 14px; color: #64748b; line-height: 1.6;">
-          If you did not attempt to sign up or log in, please secure your account or ignore this email.
-        </p>
+          <p style="font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 0;">
+            If you did not attempt to sign up or log in, please secure your account or ignore this email.
+          </p>
+          <p style="font-size: 13px; color: #94a3b8; margin-top: 10px;">
+            MRU CSE Placement Portal team will never ask for your password or codes via email.
+          </p>
+        </div>
+        <div style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #f1f5f9;">
+          <p style="font-size: 13px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
+        </div>
       </div>
-      <div style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #f1f5f9;">
-        <p style="font-size: 13px; color: #94a3b8; margin: 0;">&copy; ${new Date().getFullYear()} MRU CSE Placement Cell. All rights reserved.</p>
-      </div>
-    </div>
+    </body>
+    </html>
   `;
   await sendEmailJS(email, subject, html, otp);
 };
