@@ -236,7 +236,7 @@ function StudentDashboard() {
             {user?.resume && (
               <div style={{ marginTop: '10px' }}>
                 <a
-                  href={`${(process.env.REACT_APP_API_URL || "http://localhost:5000/api").replace("/api", "")}/uploads/${user.resume}`}
+                  href={`${window.location.origin}/uploads/${user.resume}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
