@@ -188,21 +188,30 @@ button {
   align-items: center;
   min-height: 100vh;
   padding: 2rem;
-  background: #e8edf3;
+  background: linear-gradient(-45deg, #1a3c6e, #c8372d, #0d1b2a, #1f3c88);
+  background-size: 400% 400%;
+  animation: authGradient 15s ease infinite;
   perspective: none;
+}
+
+@keyframes authGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .auth-card {
   width: 100%;
   max-width: 420px;
-  background: #ffffff;
-  backdrop-filter: none;
+  /* Premium Glassmorphism Effect */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   padding: 2.5rem 2rem;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
   text-align: center;
-  animation: none;
   position: relative;
   overflow: visible;
 }
