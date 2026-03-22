@@ -54,12 +54,10 @@ Packed with industry-standard features—including secure JWT Refresh Token rota
 
 ## 🚀 Live Demo Deployments
 
-- **Web Application (Render)**  
-  The full-stack platform handling authentication, routing, application, and serving the React frontend.
+- **Web Application (React + Node.js)**  
+  [https://cseplacement.onrender.com](https://cseplacement.onrender.com)
 - **AI Analytics Service (Hugging Face Spaces)**  
-  The dedicated, headless Machine Learning microservice built natively on Hugging Face Spaces.
-
-*(Ask the repository owner for the live deployment links!)*
+  [https://cseplacement7-smart-placement-ml.hf.space](https://cseplacement7-smart-placement-ml.hf.space)
 
 ---
 
