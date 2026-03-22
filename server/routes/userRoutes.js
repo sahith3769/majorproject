@@ -63,9 +63,9 @@ router.post(
         const form = new FormData();
         form.append("resume", fs.createReadStream(resumePath));
 
-        const mlServiceUrl = process.env.ML_SERVICE_URL || "http://localhost:5001";
+        const mlUrl = process.env.ML_SERVICE_URL ? process.env.ML_SERVICE_URL.replace(/\/$/, '') : "http://localhost:5001";
         
-        const response = await axios.post(`${mlServiceUrl}/analyze-resume`, form, {
+        const response = await axios.post(`${mlUrl}/analyze-resume`, form, {
           headers: { ...form.getHeaders() },
           timeout: 10000 // 10s timeout
         });
@@ -146,11 +146,11 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
     const form = new FormData();
     form.append("resume", fs.createReadStream(resumePath));
 
-    const mlServiceUrl = process.env.ML_SERVICE_URL || "http://localhost:5001";
+    const mlUrl = process.env.ML_SERVICE_URL ? process.env.ML_SERVICE_URL.replace(/\/$/, '') : "http://localhost:5001";
     
     logger.info(`Sending resume ${user.resume} to ML service for analysis...`);
     
-    const response = await axios.post(`${mlServiceUrl}/analyze-resume`, form, {
+    const response = await axios.post(`${mlUrl}/analyze-resume`, form, {
       headers: {
         ...form.getHeaders(),
       },
