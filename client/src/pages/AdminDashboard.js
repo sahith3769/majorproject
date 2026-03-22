@@ -76,6 +76,16 @@ function AdminDashboard() {
     }
   };
 
+  const handleDeleteCompany = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this company and all its posted jobs? This action cannot be undone.")) return;
+    try {
+      await API.delete(`/admin/company/${id}`);
+      fetchData();
+    } catch (error) {
+      console.error("Deletion error", error);
+    }
+  };
+
   const handleApproveJob = async (id, approved) => {
     try {
       await API.put(`/admin/approve-job/${id}`, { approved });
@@ -181,6 +191,13 @@ function AdminDashboard() {
                               Approve
                             </button>
                           )}
+                          <button 
+                            className="btn-danger" 
+                            onClick={() => handleDeleteCompany(company._id)} 
+                            style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#dc2626' }}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -251,7 +268,10 @@ function AdminDashboard() {
                           <td>{c.name}</td>
                           <td>{c.email}</td>
                           <td>
-                            <button className="btn-primary" onClick={() => handleApproveCompany(c._id, true)}>Approve</button>
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                              <button className="btn-primary" onClick={() => handleApproveCompany(c._id, true)}>Approve</button>
+                              <button className="btn-danger" onClick={() => handleDeleteCompany(c._id)} style={{ background: '#dc2626' }}>Reject & Delete</button>
+                            </div>
                           </td>
                         </tr>
                       ))}

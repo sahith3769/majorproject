@@ -2,6 +2,7 @@ import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Register() {
   const [form, setForm] = useState({
@@ -43,29 +44,81 @@ function Register() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Create Account</h2>
-        <p className="auth-subtitle">
-          Register to MRU CSE Placement Portal
+    <div className={`auth-container ${form.role === 'company' ? 'company-theme' : ''}`}>
+      <motion.div 
+        className="auth-card"
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        {/* Branding Header */}
+        <div className="navbar-brand" style={{ position: 'relative', left: 'auto', transform: 'none', marginBottom: '20px', pointerEvents: 'auto' }}>
+          <div className="brand-top" style={{ color: 'var(--primary)' }}>MRU</div>
+          <div className="brand-bottom" style={{ color: 'var(--text-secondary)' }}>CSE PLACEMENT PORTAL</div>
+        </div>
+
+        {/* Tab Switcher (Matches Login Style) */}
+        <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', marginBottom: '25px', gap: '5px' }}>
+          <button
+            type="button"
+            className="auth-toggle-btn"
+            onClick={() => setForm({ ...form, role: "student" })}
+            style={{
+              background: form.role === 'student' ? 'var(--primary)' : 'transparent',
+              color: form.role === 'student' ? '#ffffff' : '#000000',
+              fontWeight: form.role === 'student' ? 'bold' : 'normal',
+              flex: 1,
+              padding: '8px 0',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            🎓 Student
+          </button>
+          <button
+            type="button"
+            className="auth-toggle-btn"
+            onClick={() => setForm({ ...form, role: "company" })}
+            style={{
+              background: form.role === 'company' ? 'var(--primary)' : 'transparent',
+              color: form.role === 'company' ? '#ffffff' : '#000000',
+              fontWeight: form.role === 'company' ? 'bold' : 'normal',
+              flex: 1,
+              padding: '8px 0',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            🏢 Company
+          </button>
+        </div>
+
+        <h2 style={{ color: '#000000', background: 'none', WebkitTextFillColor: 'initial', marginBottom: '5px' }}>
+          {form.role === "company" ? "Company Registration" : "Student Registration"}
+        </h2>
+        <p className="auth-subtitle" style={{ marginBottom: '25px' }}>
+          {form.role === "company" ? "Register your organization to hire top talent." : "Create your portal account."}
         </p>
 
         <form onSubmit={handleSubmit}>
-          {form.role !== "company" && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={form.name}
-              onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
-              required
-            />
-          )}
+          {/* THE FIX: Name field is now permanently visible for both roles! */}
+          <input
+            type="text"
+            placeholder={form.role === "company" ? "Company Name (e.g., Google)" : "Full Name"}
+            value={form.name}
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
+            required
+          />
 
           <input
             type="text"
-            placeholder={form.role === "company" ? "Company's User Name" : "Username (unique)"}
+            placeholder={form.role === "company" ? "Recruiter Handle (Unique Username)" : "Username (Unique)"}
             value={form.username}
             onChange={(e) =>
               setForm({ ...form, username: e.target.value })
@@ -75,7 +128,7 @@ function Register() {
 
           <input
             type="email"
-            placeholder="Email"
+            placeholder={form.role === "company" ? "Corporate Email" : "Student Email"}
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
@@ -83,7 +136,7 @@ function Register() {
             required
           />
 
-          <div style={{ position: 'relative', marginBottom: '15px' }}>
+          <div style={{ position: 'relative', marginBottom: '20px' }}>
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
@@ -92,7 +145,7 @@ function Register() {
                 setForm({ ...form, password: e.target.value })
               }
               required
-              style={{ marginBottom: 0, paddingRight: '50px' }}
+              style={{ paddingRight: '50px', marginBottom: '0' }}
             />
             <button
               type="button"
@@ -115,29 +168,24 @@ function Register() {
             </button>
           </div>
 
-          <select
-            value={form.role}
-            onChange={(e) =>
-              setForm({ ...form, role: e.target.value })
-            }
-            required
+          <motion.button 
+            type="submit" 
+            className="auth-btn" 
+            disabled={loading}
+            whileHover={{ scale: loading ? 1 : 1.02 }}
+            whileTap={{ scale: loading ? 1 : 0.98 }}
           >
-            <option value="student">Student</option>
-            <option value="company">Company</option>
-          </select>
-
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? "Registering..." : "Register"}
-          </button>
+            {loading ? "Registering..." : "Register Account"}
+          </motion.button>
         </form>
 
-        <p className="auth-footer">
+        <p className="auth-footer" style={{ marginTop: '20px' }}>
           Already have an account?{" "}
           <button className="auth-secondary-btn" onClick={() => navigate("/")}>
             Login
           </button>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

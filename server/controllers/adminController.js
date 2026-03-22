@@ -23,9 +23,22 @@ exports.approveCompany = async (req, res) => {
   try {
     const { approved } = req.body; // Can be true or false (rejected)
     await User.findByIdAndUpdate(req.params.id, { approved });
-    res.json({ msg: `Company ${approved ? 'Approved' : 'Updated'} Successfully` });
+    res.json({ msg: `Company ${approved ? 'Approved' : 'Rejected'} Successfully` });
   } catch (error) {
     logger.error(`Approve Company Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= DELETE COMPANY ================= */
+exports.deleteCompany = async (req, res) => {
+  try {
+    const companyId = req.params.id;
+    await Job.deleteMany({ company: companyId }); // Cascade delete orphaned jobs
+    await User.findByIdAndDelete(companyId);
+    res.json({ msg: "Company and all associated jobs deleted successfully" });
+  } catch (error) {
+    logger.error(`Delete Company Error: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 };
