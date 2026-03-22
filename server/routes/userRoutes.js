@@ -66,7 +66,10 @@ router.post(
         const mlUrl = process.env.ML_SERVICE_URL ? process.env.ML_SERVICE_URL.replace(/\/$/, '') : "http://localhost:5001";
         
         const response = await axios.post(`${mlUrl}/analyze-resume`, form, {
-          headers: { ...form.getHeaders() },
+          headers: { 
+            ...form.getHeaders(),
+            "ngrok-skip-browser-warning": "any"
+          },
           timeout: 10000 // 10s timeout
         });
 
@@ -153,6 +156,7 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
     const response = await axios.post(`${mlUrl}/analyze-resume`, form, {
       headers: {
         ...form.getHeaders(),
+        "ngrok-skip-browser-warning": "any"
       },
     });
 

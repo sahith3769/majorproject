@@ -226,15 +226,19 @@ exports.getRecommendedJobs = async (req, res) => {
 
     // Try calling ML Service
     try {
-      const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:5001';
-      // Ensure student.skills and job.skillsRequired are passed correctly
-      const response = await axios.post(`${mlUrl}/recommend`, {
+      const mlUrl = process.env.ML_SERVICE_URL ? process.env.ML_SERVICE_URL.replace(/\/$/, '') : 'http://localhost:5001';
+      
+      const mlResponse = await axios.post(`${mlUrl}/recommend`, {
         skills: student.skills,
-        jobs: jobs
+        jobs: Array.isArray(jobs) ? jobs : [jobs]
+      }, {
+        headers: {
+          "ngrok-skip-browser-warning": "any"
+        }
       });
 
       // Restore populated company data if lost from ML service
-      const recommendedJobs = response.data.map(recJob => {
+      const recommendedJobs = mlResponse.data.map(recJob => {
         const originalJob = jobs.find(j => j._id.toString() === recJob._id.toString());
         return {
           ...originalJob,
