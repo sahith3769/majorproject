@@ -40,6 +40,77 @@ Packed with industry-standard features—including secure JWT Refresh Token rota
 
 ---
 
+## 📊 System Architecture & Diagrams
+
+### High-Level Architecture
+This system utilizes a highly decoupled microservice architecture, routing machine-heavy NLP tasks to a Python/Flask container.
+```mermaid
+graph TD
+    UI[Frontend: React.js] -->|HTTPS REST| API[Backend: Node.js / Express]
+    API -->|Mongoose ORM| DB[(MongoDB Atlas)]
+    API -->|Parse Resume & Match| ML[ML Service: Python / Flask]
+    ML -->|Return Skills/Score| API
+```
+
+### Core Sequence Diagram (AI Resume Matching)
+```mermaid
+sequenceDiagram
+    participant S as Student
+    participant F as React Frontend
+    participant B as Node.js Backend
+    participant M as Python ML Service
+    participant D as MongoDB
+
+    S->>F: Uploads Resume PDF
+    F->>B: POST /api/users/upload-resume
+    B->>M: POST /analyze (File buffer)
+    M-->>B: Return NLP Extracted Skills
+    B->>D: Update Student Profile Skills
+    B-->>F: Success & Skills Mapped
+    
+    F->>B: GET /api/jobs/recommend
+    B->>D: Fetch Jobs & Student Profile
+    B->>M: POST /match (Calculate Cosine Similarity)
+    M-->>B: Return Job Match Scores
+    B-->>F: Renders Recommended Jobs UI
+```
+
+### Entity Relationship (Database) Diagram
+```mermaid
+erDiagram
+    USER ||--o{ JOB : posts
+    USER ||--o{ APPLICATION : submits
+    JOB ||--o{ APPLICATION : receives
+
+    USER {
+        ObjectId _id
+        String name
+        String email
+        String role "Student, Company, Admin"
+        String[] skills
+        String resume
+        Boolean isVerified
+    }
+
+    JOB {
+        ObjectId _id
+        String title
+        String description
+        String[] skillsRequired
+        ObjectId companyId
+        Date deadline
+    }
+
+    APPLICATION {
+        ObjectId studentId
+        ObjectId jobId
+        String status "Pending, Accepted, Rejected"
+        Date appliedAt
+    }
+```
+
+---
+
 ## 🛠️ Technology Stack
 
 | Architecture Layer | Technologies Used |
