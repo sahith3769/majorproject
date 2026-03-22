@@ -144,9 +144,9 @@ def analyze_resume():
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
 
-        # Save temporarily
-        temp_path = os.path.join("uploads", file.filename)
-        os.makedirs("uploads", exist_ok=True)
+        # Save temporarily in the always-writable /tmp directory
+        temp_path = os.path.join("/tmp", file.filename)
+        os.makedirs("/tmp", exist_ok=True)
         file.save(temp_path)
 
         # 1. Extract Text from PDF
