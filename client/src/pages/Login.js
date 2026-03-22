@@ -45,7 +45,7 @@ function Login() {
       }
 
     } catch (error) {
-      toast.error(error.response?.data?.msg || "Invalid Credentials");
+      toast.error(error.response?.data?.msg || error.response?.data?.error || "Invalid Credentials");
     } finally {
       setLoading(false);
     }
