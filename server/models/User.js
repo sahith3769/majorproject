@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
   mobile: String,
   experience: { type: Number, default: 0 },
   approved: { type: Boolean, default: false }, // for company
+  refreshToken: String, // Stores the current valid refresh token for secure logout
 });
 
 module.exports = mongoose.model("User", userSchema);

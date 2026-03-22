@@ -142,16 +142,86 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ msg: "Invalid credentials" });
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "15m" }
     );
 
-    res.json({ token, role: user.role });
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({ token: accessToken, role: user.role });
 
   } catch (error) {
     logger.error(`Login Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= REFRESH TOKEN ================= */
+exports.refresh = async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(401);
+
+    const refreshToken = cookies.jwt;
+    const user = await User.findOne({ refreshToken });
+    if (!user) return res.sendStatus(403); // Forbidden
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+      if (err || user._id.toString() !== decoded.id) return res.sendStatus(403);
+
+      const accessToken = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+      );
+
+      res.json({ token: accessToken, role: user.role });
+    });
+  } catch (error) {
+    logger.error(`Refresh Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= LOGOUT ================= */
+exports.logout = async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204); // No content
+
+    const refreshToken = cookies.jwt;
+    const user = await User.findOne({ refreshToken });
+    
+    if (user) {
+      user.refreshToken = "";
+      await user.save();
+    }
+
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    });
+    
+    res.sendStatus(204);
+  } catch (error) {
+    logger.error(`Logout Error: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 };

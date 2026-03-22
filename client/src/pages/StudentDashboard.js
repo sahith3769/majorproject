@@ -175,7 +175,8 @@ function StudentDashboard() {
     return { hasMatch, missingSkills, matchedSkills, matchCount };
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await API.post("/auth/logout"); } catch (err) {}
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     navigate("/");

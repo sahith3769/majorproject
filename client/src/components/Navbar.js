@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import API from "../services/api";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -12,7 +13,8 @@ function Navbar() {
 
   if (!role) return null; // Hide if not logged in
 
-  const logout = () => {
+  const logout = async () => {
+    try { await API.post("/auth/logout"); } catch (err) {}
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     navigate("/");

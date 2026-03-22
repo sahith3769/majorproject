@@ -56,8 +56,9 @@ function AdminDashboard() {
   const applicationsList = getAllApplications();
   const placedStudentsList = applicationsList.filter(app => app.status === 'accepted');
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (view === 'overview') {
+      try { await API.post("/auth/logout"); } catch (err) {}
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       navigate("/");

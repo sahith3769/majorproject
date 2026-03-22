@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
@@ -27,7 +28,13 @@ app.use(
   })
 );
 
-app.use(cors()); // Configure strict CORS in production!
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://cseplacement.onrender.com']
+    : ['http://localhost:3000'],
+  credentials: true,
+}));
+app.use(cookieParser());
 
 // Rate Limiting
 const limiter = rateLimit({
