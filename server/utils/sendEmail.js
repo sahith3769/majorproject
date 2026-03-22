@@ -1,47 +1,9 @@
-const axios = require("axios");
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
 const logger = require("../config/logger");
 
-const EMAILJS_URL = 'https://api.emailjs.com/api/v1.0/email/send';
-
-/* 
-  EmailJS REST API Setup
-  Uses standard HTTP port 443 which solves the Render SMTP firewall block.
-*/
-const sendEmailJS = async (to_email, subject, html_content, otp = "") => {
-  const serviceId = process.env.EMAILJS_SERVICE_ID;
-  const templateId = process.env.EMAILJS_TEMPLATE_ID;
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
-  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
-
-  if (!serviceId || !templateId || !publicKey) {
-    logger.error("Missing EmailJS credentials in .env");
-    return;
-  }
-
-  const payload = {
-    service_id: serviceId,
-    template_id: templateId,
-    user_id: publicKey,
-    accessToken: privateKey,
-    template_params: {
-      to_email: to_email,
-      subject: subject,
-      message_html: html_content,
-      otp: otp // Added so the template {{otp}} tag works
-    }
-  };
-
-  try {
-    const response = await axios.post(EMAILJS_URL, payload);
-    console.log(`[SUCCESS] Email sent successfully to ${to_email}`);
-    logger.info(`Email sent successfully to ${to_email}`);
-  } catch (error) {
-    const errData = error.response ? error.response.data : error.message;
-    console.error(`[CRITICAL Email Send Error]:`, errData); 
-    logger.error(`EmailJS Error: ${JSON.stringify(errData)}`);
-    throw new Error("Failed to send email. Please try again later.");
-  }
-};
+const mailersend = new MailerSend({
+  apiKey: process.env.MAILERSEND_API_KEY,
+});
 
 const sendEmail = async (email, otp) => {
   const subject = "OTP Verification - MRU CSE Placement Portal";
@@ -80,7 +42,8 @@ const sendEmail = async (email, otp) => {
     </body>
     </html>
   `;
-  await sendEmailJS(email, subject, html, otp);
+  
+  await executeMailerSend(email, subject, html);
 };
 
 const sendStatusEmail = async (email, jobTitle, status, studentName) => {
@@ -108,7 +71,7 @@ const sendStatusEmail = async (email, jobTitle, status, studentName) => {
     `;
   }
 
-  await sendEmailJS(email, subject, message);
+  await executeMailerSend(email, subject, message);
 };
 
 const sendAdminNotification = async (type, details) => {
@@ -140,7 +103,34 @@ const sendAdminNotification = async (type, details) => {
     `;
   }
 
-  await sendEmailJS(adminEmail, subject, message);
+  await executeMailerSend(adminEmail, subject, message);
+};
+
+const executeMailerSend = async (toEmail, subject, htmlContent) => {
+  try {
+    const sentFrom = new Sender(
+      process.env.MAILERSEND_FROM_EMAIL || "info@trial-2p0347z011plzdrn.mlsender.net",
+      "MRU CSE Placement Portal"
+    );
+    const recipients = [new Recipient(toEmail, toEmail)];
+
+    const emailParams = new EmailParams()
+      .setFrom(sentFrom)
+      .setTo(recipients)
+      .setReplyTo(sentFrom)
+      .setSubject(subject)
+      .setHtml(htmlContent)
+      .setText(htmlContent.replace(/<[^>]+>/g, '')); // Basic fallback text
+
+    const response = await mailersend.email.send(emailParams);
+    console.log(`[SUCCESS] Email sent successfully to ${toEmail}`);
+    logger.info(`Email sent successfully to ${toEmail}`);
+    return true;
+  } catch (error) {
+    console.error(`[CRITICAL Email Send Error]:`, error.body || error.message);
+    logger.error(`MailerSend Error for ${toEmail}: ${JSON.stringify(error.body || error.message)}`);
+    throw new Error("Failed to send email. Please try again later.");
+  }
 };
 
 module.exports = { sendEmail, sendStatusEmail, sendAdminNotification };

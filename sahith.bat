@@ -9,7 +9,7 @@ echo    If MongoDB is not running, this might fail.
 echo.
 
 echo 2. Installing and Starting ML Service (Python)...
-start "ML Service" cmd /k "cd ml-service && pip install -r requirements.txt && python app.py"
+start "ML Service" cmd /k "cd ml-service && if not exist venv (python -m venv venv) && venv\Scripts\pip install -r requirements.txt && venv\Scripts\python app.py"
 
 echo 3. Installing and Starting Backend Server (Node.js)...
 start "Backend Server" cmd /k "cd server && npm install && npm run dev"

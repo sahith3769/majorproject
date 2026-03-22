@@ -22,7 +22,11 @@ if not exist node_modules (
 )
 
 echo.
-echo Step 3: Launching Production Server...
+echo Step 3: Launching ML Service...
+start "ML Service" cmd /k "cd ml-service && if not exist venv (python -m venv venv) && venv\Scripts\pip install -r requirements.txt && venv\Scripts\python app.py"
+
+echo.
+echo Step 4: Launching Production Server...
 echo (Serving frontend from client/build)
 set NODE_ENV=production
 node server.js
