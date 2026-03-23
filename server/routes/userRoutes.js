@@ -110,9 +110,13 @@ router.get("/resume/:id", async (req, res) => {
     if (!user || !user.resume) {
       return res.status(404).json({ error: "Resume not found" });
     }
-    // Parse the data URI
+    // Parse the data URI - handle legacy records (filenames) gracefully
     const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
-    if (!matches) return res.status(500).json({ error: "Invalid resume format" });
+    if (!matches) {
+      return res.status(400).json({ 
+        error: "Legacy resume format detected. Please re-upload your resume on your profile page to enable previews." 
+      });
+    }
     
     const mimeType = matches[1];
     const buffer = Buffer.from(matches[2], "base64");
@@ -167,7 +171,9 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
     // Extract buffer from base64 data URI stored in MongoDB
     const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
     if (!matches) {
-      return res.status(500).json({ error: "Invalid resume format in database." });
+       return res.status(400).json({ 
+         error: "Legacy resume format. Please re-upload your resume on your profile page to use AI scanning." 
+       });
     }
 
     const mimeType = matches[1];
