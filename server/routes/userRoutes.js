@@ -16,12 +16,12 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = [".pdf", ".doc", ".docx"];
+    const allowedTypes = [".pdf"];
     const ext = require("path").extname(file.originalname).toLowerCase();
     if (allowedTypes.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only PDF, DOC, and DOCX are allowed."));
+      cb(new Error("Invalid file type. Only PDF files are allowed."));
     }
   },
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit

@@ -166,7 +166,20 @@ function Profile() {
                   : 'You must upload a resume to get personalized job recommendations.'}
               </p>
               <label className="file-upload-btn" style={{ display: 'inline-block', padding: '8px 20px', cursor: 'pointer' }}>
-                <input type="file" onChange={uploadResume} style={{ display: 'none' }} />
+                <input 
+                  type="file" 
+                  accept=".pdf" 
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+                       toast.error("Please select a PDF file only.");
+                       e.target.value = null;
+                       return;
+                    }
+                    uploadResume(e);
+                  }} 
+                  style={{ display: 'none' }} 
+                />
                 <span style={{ fontWeight: 600, color: 'var(--primary)' }}>
                   {form.resume ? 'Update Resume' : 'Upload Resume Now'}
                 </span>

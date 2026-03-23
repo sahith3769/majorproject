@@ -261,7 +261,20 @@ function StudentDashboard() {
 
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <label className="file-upload-btn" style={{ padding: '10px 30px', textAlign: 'center' }}>
-              <input type="file" onChange={uploadResume} style={{ display: 'none' }} />
+              <input 
+                type="file" 
+                accept=".pdf" 
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+                    toast.error("Please select a PDF file only.");
+                    e.target.value = null;
+                    return;
+                  }
+                  uploadResume(e);
+                }} 
+                style={{ display: 'none' }} 
+              />
               <span style={{ fontWeight: 600, color: 'var(--primary)' }}>
                 {user?.resume ? 'Update Resume' : 'Upload New Resume'}
               </span>
@@ -421,7 +434,20 @@ function StudentDashboard() {
             Upload your latest resume to allow our AI to match your skills with the best opportunities.
           </p>
           <label className="btn-primary" style={{ cursor: 'pointer', display: 'inline-block' }}>
-            <input type="file" onChange={uploadResume} style={{ display: 'none' }} />
+            <input 
+              type="file" 
+              accept=".pdf" 
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+                  toast.error("Please select a PDF file only.");
+                  e.target.value = null;
+                  return;
+                }
+                uploadResume(e);
+              }} 
+              style={{ display: 'none' }} 
+            />
             Upload Resume Now
           </label>
         </div>
