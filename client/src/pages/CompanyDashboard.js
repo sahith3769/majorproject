@@ -18,7 +18,8 @@ function CompanyDashboard() {
     experience: "",
   });
 
-  const BASE_URL = window.location.origin;
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  const BASE_URL = apiUrl.replace('/api', '');
 
   /* ================= FETCH JOBS ================= */
   const fetchJobs = async () => {

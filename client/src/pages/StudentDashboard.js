@@ -234,26 +234,30 @@ function StudentDashboard() {
             <p style={{ margin: 0, color: '#000000' }}>
               {user?.resume ? 'Keep your CV up to date for better job matches.' : 'Upload your latest CV to unlock personalized recommendations.'}
             </p>
-            {user?.resume && (
-              <div style={{ marginTop: '10px' }}>
-                <a
-                  href={`${window.location.origin}/uploads/${user.resume}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    color: 'var(--primary)',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    fontSize: '0.9rem'
-                  }}
-                >
-                  Preview Current Resume
-                </a>
-              </div>
-            )}
+            {user?.resume && (() => {
+                const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+                const backendBase = apiUrl.replace('/api', '');
+                return (
+                  <div style={{ marginTop: '10px' }}>
+                    <a
+                      href={`${backendBase}/uploads/${user.resume}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        color: 'var(--primary)',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      Preview Current Resume
+                    </a>
+                  </div>
+                );
+              })()}
           </div>
 
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
