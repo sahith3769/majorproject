@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
   },
   otp: String,
   otpExpiry: Date,
-  resume: String,
+  resume: String, // stored as base64 data URI in MongoDB
+  resumeOriginalName: String,
   mobile: String,
   experience: { type: Number, default: 0 },
   approved: { type: Boolean, default: false }, // for company

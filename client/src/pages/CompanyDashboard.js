@@ -289,7 +289,7 @@ function CompanyDashboard() {
                             {app.student.resume ? (
                               <a
                                 className="cv-link"
-                                href={`${BASE_URL}/uploads/${app.student.resume}`}
+                                href={`${apiUrl}/users/resume/${app.student._id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >

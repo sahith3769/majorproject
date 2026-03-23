@@ -240,7 +240,7 @@ function StudentDashboard() {
                 return (
                   <div style={{ marginTop: '10px' }}>
                     <a
-                      href={`${backendBase}/uploads/${user.resume}`}
+                      href={`${apiUrl}/users/resume/${user._id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
