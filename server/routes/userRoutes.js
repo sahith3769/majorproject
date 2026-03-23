@@ -162,26 +162,34 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
 
     const axios = require("axios");
     const FormData = require("form-data");
-    const path = require("path");
+    const { Readable } = require("stream");
 
-    const resumePath = path.join(__dirname, "../uploads", user.resume);
-
-    if (!fs.existsSync(resumePath)) {
-      return res.status(404).json({ error: "Resume file not found on server." });
+    // Extract buffer from base64 data URI stored in MongoDB
+    const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) {
+      return res.status(500).json({ error: "Invalid resume format in database." });
     }
 
+    const mimeType = matches[1];
+    const buffer = Buffer.from(matches[2], "base64");
+    const filename = user.resumeOriginalName || "resume.pdf";
+
     const form = new FormData();
-    form.append("resume", fs.createReadStream(resumePath));
+    const readable = new Readable();
+    readable.push(buffer);
+    readable.push(null);
+    form.append("resume", readable, { filename, contentType: mimeType });
 
     const mlUrl = process.env.ML_SERVICE_URL ? process.env.ML_SERVICE_URL.replace(/\/$/, '') : "http://localhost:5001";
     
-    logger.info(`Sending resume ${user.resume} to ML service for analysis...`);
+    logger.info(`Sending resume for user ${user.email} to ML service for analysis...`);
     
     const response = await axios.post(`${mlUrl}/analyze-resume`, form, {
       headers: {
         ...form.getHeaders(),
         "ngrok-skip-browser-warning": "any"
       },
+      timeout: 15000
     });
 
     const { skills } = response.data;
@@ -200,7 +208,7 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
 
   } catch (error) {
     logger.error(`Resume Analysis Error: ${error.message}`);
-    res.status(500).json({ error: "Faild to analyze resume. Make sure ML service is running." });
+    res.status(500).json({ error: "Failed to analyze resume. Make sure ML service is running." });
   }
 });
 

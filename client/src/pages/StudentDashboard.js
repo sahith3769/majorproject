@@ -235,12 +235,11 @@ function StudentDashboard() {
               {user?.resume ? 'Keep your CV up to date for better job matches.' : 'Upload your latest CV to unlock personalized recommendations.'}
             </p>
             {user?.resume && (() => {
-                const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-                const backendBase = apiUrl.replace('/api', '');
+                const resumeUrl = `/api/users/resume/${user._id}`;
                 return (
                   <div style={{ marginTop: '10px' }}>
                     <a
-                      href={`${apiUrl}/users/resume/${user._id}`}
+                      href={resumeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

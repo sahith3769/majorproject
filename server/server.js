@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const dns = require("dns");
 dns.setDefaultResultOrder("ipv4first");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
@@ -25,6 +26,7 @@ app.set("trust proxy", 1); // ✅ FIX ADDED HERE
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false, // Allow inline PDF rendering in browsers
   })
 );
 
@@ -39,7 +41,7 @@ app.use(cookieParser());
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 200 : 500,
 });
 app.use(limiter);
 

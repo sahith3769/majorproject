@@ -18,8 +18,7 @@ function CompanyDashboard() {
     experience: "",
   });
 
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-  const BASE_URL = apiUrl.replace('/api', '');
+
 
   /* ================= FETCH JOBS ================= */
   const fetchJobs = async () => {
@@ -289,7 +288,7 @@ function CompanyDashboard() {
                             {app.student.resume ? (
                               <a
                                 className="cv-link"
-                                href={`${apiUrl}/users/resume/${app.student._id}`}
+                                href={`/api/users/resume/${app.student._id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
