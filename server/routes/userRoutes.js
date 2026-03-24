@@ -4,6 +4,7 @@ const multer = require("multer");
 const { protect, roleCheck } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const logger = require("../config/logger");
+const mongoose = require("mongoose");
 
 const fs = require("fs");
 
@@ -42,10 +43,22 @@ router.post(
 
       const user = await User.findById(req.user.id);
       
-      // Store the file buffer as base64 + mimetype so it can be served later
-      const base64Data = req.file.buffer.toString("base64");
+      // Store file in GridFS via streams instead of heavy Base64 strings
       const mimeType = req.file.mimetype;
-      user.resume = `data:${mimeType};base64,${base64Data}`;
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "resumes" });
+      
+      const uploadStream = bucket.openUploadStream(req.file.originalname, {
+        contentType: mimeType
+      });
+      
+      uploadStream.end(req.file.buffer);
+
+      await new Promise((resolve, reject) => {
+        uploadStream.on('finish', resolve);
+        uploadStream.on('error', reject);
+      });
+
+      user.resume = uploadStream.id.toString();
       user.resumeOriginalName = req.file.originalname;
 
       let skillsExtracted = false;
@@ -110,7 +123,26 @@ router.get("/resume/:id", async (req, res) => {
     if (!user || !user.resume) {
       return res.status(404).json({ error: "Resume not found" });
     }
-    // Parse the data URI - handle legacy records (filenames) gracefully
+    
+    const filename = user.resumeOriginalName || "resume.pdf";
+
+    // 1. GridFS Implementation (New Format)
+    if (mongoose.Types.ObjectId.isValid(user.resume) && user.resume.length === 24) {
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "resumes" });
+      const downloadStream = bucket.openDownloadStream(new mongoose.Types.ObjectId(user.resume));
+      
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+      
+      downloadStream.on('error', (err) => {
+        logger.error(`GridFS Download Error: ${err.message}`);
+        res.status(404).end();
+      });
+      
+      return downloadStream.pipe(res);
+    }
+
+    // 2. Legacy Base64 Format Graceful Fallback
     const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
     if (!matches) {
       return res.status(400).json({ 
@@ -121,7 +153,6 @@ router.get("/resume/:id", async (req, res) => {
     const mimeType = matches[1];
     const buffer = Buffer.from(matches[2], "base64");
     
-    const filename = user.resumeOriginalName || "resume.pdf";
     res.setHeader("Content-Type", mimeType);
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Content-Length", buffer.length);
@@ -168,17 +199,32 @@ router.post("/analyze-resume", protect, roleCheck(["student"]), async (req, res)
     const FormData = require("form-data");
     const { Readable } = require("stream");
 
-    // Extract buffer from base64 data URI stored in MongoDB
-    const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
-    if (!matches) {
-       return res.status(400).json({ 
-         error: "Legacy resume format. Please re-upload your resume on your profile page to use AI scanning." 
-       });
-    }
-
-    const mimeType = matches[1];
-    const buffer = Buffer.from(matches[2], "base64");
+    let buffer;
+    let mimeType = "application/pdf";
     const filename = user.resumeOriginalName || "resume.pdf";
+
+    if (mongoose.Types.ObjectId.isValid(user.resume) && user.resume.length === 24) {
+      // Fetch from GridFS
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "resumes" });
+      const downloadStream = bucket.openDownloadStream(new mongoose.Types.ObjectId(user.resume));
+      const chunks = [];
+      await new Promise((resolve, reject) => {
+          downloadStream.on('data', chunk => chunks.push(chunk));
+          downloadStream.on('error', reject);
+          downloadStream.on('end', resolve);
+      });
+      buffer = Buffer.concat(chunks);
+    } else {
+      // Extract buffer from legacy base64 data URI
+      const matches = user.resume.match(/^data:(.+);base64,(.+)$/);
+      if (!matches) {
+         return res.status(400).json({ 
+           error: "Legacy resume format. Please re-upload your resume on your profile page to use AI scanning." 
+         });
+      }
+      mimeType = matches[1];
+      buffer = Buffer.from(matches[2], "base64");
+    }
 
     const form = new FormData();
     const readable = new Readable();
