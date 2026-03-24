@@ -225,3 +225,97 @@ exports.logout = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/* ================= FORGOT PASSWORD ================= */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { identifier } = req.body;
+    const user = await User.findOne({
+      $or: [
+        { email: { $regex: `^${identifier}$`, $options: 'i' } },
+        { username: { $regex: `^${identifier}$`, $options: 'i' } }
+      ]
+    });
+
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 mins
+    await user.save();
+
+    // Send email
+    (async () => {
+      try {
+        await sendEmail(user.email, otp);
+      } catch (err) {
+        logger.error(`Forgot Password OTP Email Error: ${err.message}`);
+      }
+    })();
+
+    res.json({ msg: "OTP sent to your registered email" });
+  } catch (error) {
+    logger.error(`Forgot Password Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= RESET PASSWORD ================= */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { identifier, otp, newPassword } = req.body;
+    
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ msg: "Password must be at least 6 characters long" });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        { email: { $regex: `^${identifier}$`, $options: 'i' } },
+        { username: { $regex: `^${identifier}$`, $options: 'i' } }
+      ]
+    });
+
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    if (user.otp !== otp) return res.status(400).json({ msg: "Invalid OTP" });
+    if (user.otpExpiry < Date.now()) return res.status(400).json({ msg: "OTP expired" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.json({ msg: "Password reset successfully. You can now login." });
+  } catch (error) {
+    logger.error(`Reset Password Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/* ================= UPDATE PASSWORD ================= */
+exports.updatePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ msg: "Password must be at least 6 characters long" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({ msg: "Incorrect old password" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ msg: "Password updated successfully." });
+  } catch (error) {
+    logger.error(`Update Password Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+};

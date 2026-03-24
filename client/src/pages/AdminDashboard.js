@@ -10,6 +10,24 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ pendingJobs: 0, pendingCompanies: 0 });
   const [view, setView] = useState('overview'); // 'overview', 'applications', 'placed', 'companies', 'jobs', 'approvals'
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+
+  const updatePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      return alert("New passwords do not match"); // Admin might not have toast imported, alert is a fallback. Wait, Loader is imported but not toast.
+    }
+    try {
+      await API.put("/auth/update-password", {
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+      alert("Password Updated Successfully");
+      setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      alert(error.response?.data?.msg || "Failed to update password");
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -356,6 +374,25 @@ function AdminDashboard() {
                 </div>
               </div>
             )}
+
+            <div className="card fade-in delay-2" style={{ marginBottom: '30px' }}>
+              <h3 className="section-title" style={{ marginTop: 0 }}>Security Settings</h3>
+              <form onSubmit={updatePassword} style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) minmax(200px, 1fr) minmax(200px, 1fr) auto', gap: '15px', alignItems: 'end' }}>
+                <div style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '5px' }}>Current Password</label>
+                  <input type="password" required value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '5px' }}>New Password</label>
+                  <input type="password" required minLength="6" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div style={{ marginBottom: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '5px' }}>Confirm Password</label>
+                  <input type="password" required minLength="6" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <button className="btn-primary" type="submit" style={{ padding: '8px 20px', height: 'fit-content' }}>Update</button>
+              </form>
+            </div>
 
             <div className="jobs-grid">
               {jobs.map((job, index) => (

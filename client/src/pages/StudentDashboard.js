@@ -13,6 +13,25 @@ function StudentDashboard() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ name: "", mobile: "", experience: 0 });
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+
+  /* ================= UPDATE PASSWORD ================= */
+  const updatePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      return toast.error("New passwords do not match");
+    }
+    try {
+      await API.put("/auth/update-password", {
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+      toast.success("Password Updated Successfully");
+      setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Failed to update password");
+    }
+  };
 
   /* ================= FETCH DATA ================= */
   const fetchData = async () => {
@@ -382,6 +401,58 @@ function StudentDashboard() {
           >
             Save Changes
           </button>
+        </div>
+
+        {/* Security / Update Password Widget */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <h4 style={{ marginBottom: '5px' }}>Security Settings</h4>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>Update your account password</p>
+
+          <form onSubmit={updatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' }}>
+            <div className="form-group" style={{ marginBottom: '0' }}>
+              <label style={{ fontSize: '0.85rem' }}>Current Password</label>
+              <input
+                type="password"
+                required
+                value={passwordForm.oldPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                placeholder="Enter current password"
+                style={{ padding: '8px 12px' }}
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: '0' }}>
+              <label style={{ fontSize: '0.85rem' }}>New Password</label>
+              <input
+                type="password"
+                required
+                minLength="6"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                placeholder="Enter new password"
+                style={{ padding: '8px 12px' }}
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: '0' }}>
+              <label style={{ fontSize: '0.85rem' }}>Confirm New Password</label>
+              <input
+                type="password"
+                required
+                minLength="6"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                placeholder="Confirm new password"
+                style={{ padding: '8px 12px' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ marginTop: 'auto', padding: '10px', fontSize: '0.9rem', background: 'var(--primary)' }}
+            >
+              Update Password
+            </button>
+          </form>
         </div>
       </div>
 

@@ -15,9 +15,28 @@ function CompanyDashboard() {
     salary: "",
     skillsRequired: "",
     deadline: "",
+    deadline: "",
     experience: "",
   });
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
 
+  /* ================= UPDATE PASSWORD ================= */
+  const updatePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      return toast.error("New passwords do not match");
+    }
+    try {
+      await API.put("/auth/update-password", {
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+      toast.success("Password Updated Successfully");
+      setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Failed to update password");
+    }
+  };
 
 
   /* ================= FETCH JOBS ================= */
@@ -227,6 +246,28 @@ function CompanyDashboard() {
           <button className="btn-primary" type="submit">
             Post Job Opportunity
           </button>
+        </form>
+      </div>
+
+      {/* ================= SECURITY SETTINGS ================= */}
+      <div className="job-form fade-in delay-2" style={{ marginTop: '30px' }}>
+        <h3 className="section-title" style={{ marginTop: 0 }}>Security Settings (Update Password)</h3>
+        <form onSubmit={updatePassword}>
+          <div className="form-group">
+            <label>Current Password</label>
+            <input type="password" required value={passwordForm.oldPassword} onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div className="form-group">
+              <label>New Password</label>
+              <input type="password" required minLength="6" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Confirm New Password</label>
+              <input type="password" required minLength="6" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} />
+            </div>
+          </div>
+          <button className="btn-primary" type="submit" style={{ background: 'var(--primary)' }}>Update Password</button>
         </form>
       </div>
 

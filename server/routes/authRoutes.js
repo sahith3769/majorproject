@@ -4,7 +4,7 @@ const router = express.Router();
 // const { register, login } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/User");
-const { register, login, verifyOtp, refresh, logout } = require("../controllers/authController");
+const { register, login, verifyOtp, refresh, logout, forgotPassword, resetPassword, updatePassword } = require("../controllers/authController");
 
 
 /* Register */
@@ -21,6 +21,15 @@ router.post("/refresh", refresh);
 
 /* Logout */
 router.post("/logout", logout);
+
+/* Forgot Password */
+router.post("/forgot-password", forgotPassword);
+
+/* Reset Password */
+router.post("/reset-password", resetPassword);
+
+/* Update Password */
+router.put("/update-password", protect, updatePassword);
 
 /* Get Logged-in User (Profile) */
 router.get("/me", protect, async (req, res) => {

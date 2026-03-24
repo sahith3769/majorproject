@@ -10,6 +10,10 @@ function Login() {
     password: "",
   });
 
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotForm, setForgotForm] = useState({ identifier: "", otp: "", newPassword: "" });
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -46,6 +50,36 @@ function Login() {
 
     } catch (error) {
       toast.error(error.response?.data?.msg || error.response?.data?.error || "Invalid Credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await API.post("/auth/forgot-password", { identifier: forgotForm.identifier });
+      toast.success(data.msg);
+      setForgotStep(2);
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Error sending OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await API.post("/auth/reset-password", forgotForm);
+      toast.success(data.msg);
+      setIsForgotPassword(false);
+      setForgotStep(1);
+      setForgotForm({ identifier: "", otp: "", newPassword: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Error resetting password");
     } finally {
       setLoading(false);
     }
@@ -89,63 +123,137 @@ function Login() {
         </div>
 
         <h2 style={{ color: '#000000', background: 'none', WebkitTextFillColor: 'initial' }}>
-          {isCompany ? "Company Portal" : "Student Login"}
+          {isForgotPassword 
+            ? "Reset Password" 
+            : (isCompany ? "Company Portal" : "Student Login")}
         </h2>
         <p className="auth-subtitle">
-          {isCompany ? "Recruiter & Hiring Manager Login" : "Access your placement portal"}
+          {isForgotPassword 
+            ? "Recover your account access" 
+            : (isCompany ? "Recruiter & Hiring Manager Login" : "Access your placement portal")}
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder={isCompany ? "Username or Work Email" : "Username or Student Email"}
-            value={form.identifier}
-            onChange={(e) =>
-              setForm({ ...form, identifier: e.target.value })
-            }
-            required
-          />
-
-          <div style={{ position: 'relative' }}>
+        {!isForgotPassword ? (
+          <form onSubmit={handleSubmit}>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              type="text"
+              placeholder={isCompany ? "Username or Work Email" : "Username or Student Email"}
+              value={form.identifier}
+              onChange={(e) =>
+                setForm({ ...form, identifier: e.target.value })
+              }
               required
-              style={{ paddingRight: '40px' }}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: 'absolute',
-                right: '10px',
-                top: '40%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                color: '#000000',
-                padding: '0 10px'
-              }}
-            >
-              {showPassword ? "Hide" : "Show"}
+
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                style={{ paddingRight: '40px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '40%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  color: '#000000',
+                  padding: '0 10px'
+                }}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            <div style={{ textAlign: "right", margin: "-10px 0 15px 0" }}>
+              <button 
+                type="button" 
+                onClick={() => setIsForgotPassword(true)}
+                style={{ background: "none", border: "none", color: "var(--primary)", fontSize: "0.85rem", cursor: "pointer", fontWeight: "600" }}
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
             </button>
+            
+            <p className="auth-footer">
+              Don't have an account?{" "}
+              <button type="button" className="auth-secondary-btn" onClick={() => navigate("/register")}>
+                Register
+              </button>
+            </p>
+          </form>
+        ) : (
+          <div>
+            {forgotStep === 1 ? (
+              <form onSubmit={handleForgotPassword}>
+                <input
+                  type="text"
+                  placeholder="Enter your registered email or username"
+                  value={forgotForm.identifier}
+                  onChange={(e) => setForgotForm({ ...forgotForm, identifier: e.target.value })}
+                  required
+                />
+                <button type="submit" className="auth-btn" disabled={loading}>
+                  {loading ? "Sending OTP..." : "Send OTP"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPassword}>
+                <input
+                  type="text"
+                  placeholder="Enter OTP received on email"
+                  value={forgotForm.otp}
+                  onChange={(e) => setForgotForm({ ...forgotForm, otp: e.target.value })}
+                  required
+                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="New Password (min 6 chars)"
+                    value={forgotForm.newPassword}
+                    onChange={(e) => setForgotForm({ ...forgotForm, newPassword: e.target.value })}
+                    required
+                    style={{ paddingRight: '40px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute', right: '10px', top: '40%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem',
+                      fontWeight: '600', color: '#000000', padding: '0 10px'
+                    }}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <button type="submit" className="auth-btn" disabled={loading}>
+                  {loading ? "Resetting..." : "Reset Password"}
+                </button>
+              </form>
+            )}
+            
+            <p className="auth-footer">
+              Remembered your password?{" "}
+              <button type="button" className="auth-secondary-btn" onClick={() => { setIsForgotPassword(false); setForgotStep(1); }}>
+                Back to Login
+              </button>
+            </p>
           </div>
-
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p className="auth-footer">
-          Don't have an account?{" "}
-          <button className="auth-secondary-btn" onClick={() => navigate("/register")}>
-            Register
-          </button>
-        </p>
+        )}
 
 
       </div>
