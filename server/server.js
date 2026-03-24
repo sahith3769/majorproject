@@ -60,6 +60,9 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Health check for UptimeRobot / monitoring
+app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
+
 // Serve Static Assets in Production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
