@@ -87,3 +87,5 @@ app.listen(PORT, "0.0.0.0", () => {
   logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   console.log(`Server running on port ${PORT}`);
 });
+
+// Automatically trigger Nodemon restart to load new .env variables
