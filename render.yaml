@@ -24,10 +24,7 @@ services:
       - key: ADMIN_EMAIL
         sync: false
       - key: ML_SERVICE_URL
-        fromService:
-          type: web
-          name: smart-placement-ml
-          property: host
+        value: http://smart-placement-ml:10000
 
   # 2. ML Service (Python Flask)
   - type: web
